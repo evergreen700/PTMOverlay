@@ -1,5 +1,6 @@
 import subprocess
 import platform
+import stat
 import sys
 import os
 
@@ -12,8 +13,10 @@ def detect_executable():
         return "executables/muscle-win64.v5.3.exe"
     elif system == "Linux":
         if "aarch64" in machine or "arm64" in machine:
+            os.chmod("executables/muscle-aarch64.v5.3", stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
             return "executables/muscle-aarch64.v5.3"
         elif "x86_64" in machine or "amd64" in machine:
+            os.chmod("executables/muscle-linux-x86.v5.3", stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
             return "executables/muscle-linux-x86.v5.3"
     elif system == "Darwin":  # macOS
         if "arm64" in machine:
