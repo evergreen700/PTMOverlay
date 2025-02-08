@@ -11,7 +11,7 @@ ORTHOLOGS=config["orthologs_to_align"]
 PROTEOMES=config["proteome_dir"]
 PRE_ALIGN_FASTAS=config["pre_align_fasta_dir"]
 RAW_ALIGNMENTS=config["raw_alignment_dir"]
-MUSCLE='muscle-linux-x86.v5.3' #TODO: determine muscle based on OS or move to configfile
+MUSCLE='runMUSCLE.py'
 
 #----------HANDLING FOR "ALL" KO'S----------
 if type(ORTHOLOGS)==str and OHRTHOLOGS[:4].upper() == "ALL>":
@@ -44,7 +44,7 @@ rule muscle:
   shell:
     '''
     mkdir -p {RAW_ALIGNMENTS}
-    ./{MUSCLE} -align {input.fasta} -output {output.alignment}
+    python3 {MUSCLE} {input.fasta} {output.alignment}
     '''
 
 rule group_orthologs:
