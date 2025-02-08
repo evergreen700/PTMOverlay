@@ -32,9 +32,19 @@ if type(ORTHOLOGS)!=list:
   sys.exit()
 #------------------RULES--------------------
 
-rule preAlignBenchmark:
+rule preAnnotateBenchmark:
   input:
-    fastas=expand(RAW_ALIGNMENTS+'/{ko}.faa', ko=ORTHOLOGS)
+    fastas=expand(RAW_ALIGNMENTS+'/{ko}.clw', ko=ORTHOLOGS)
+
+rule fastaFix:
+  input:
+    alignment=RAW_ALIGNMENTS+'/{ko}.faa'
+  output:
+    cla=RAW_ALIGNMENTS+'/{ko}.clw'
+  shell:
+    '''
+    python3 reFormatFasta.py {input.alignment} {output.cla}
+    '''
 
 rule muscle:
   input:
