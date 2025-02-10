@@ -8,8 +8,8 @@ from pathlib import Path
 import re
 import json
 
-acetyl_dir = "file/path" #change to be the path to the folder of pepXML files
-acetyl_files = glob.glob(os.path.join(acetyl_dir, "**", "*.pepXML"), recursive=True)
+modification_dir = "file/path" #change to be the path to the folder of pepXML files
+modification_files = glob.glob(os.path.join(modification_dir, "**", "*.pepXML"), recursive=True)
 
 genebank_dir = "file/path" #change to go to the folder with full protein sequence .faa files
 genebank_files = glob.glob(os.path.join(genebank_dir, "**", "*.faa"), recursive=True)
@@ -60,7 +60,7 @@ UMB_pattern = re.compile(r"UMB\d{4}")
 def process_file(file):
     """Extracts unique proteins and site indexes from a .pepXML file."""
     proteins = set()
-    acetyl_subsequence_indexes = defaultdict(set)
+    mod_subsequence_indexes = defaultdict(set)
 
     try:
         for entry in pepxml.read(file):
@@ -77,12 +77,12 @@ def process_file(file):
             if modifications:
                 mod_index = int(modifications[-1]['position'])
                 peptide = search_hit.get('peptide', "")
-                acetyl_index = search_peptide(peptide, protein, UMB_string, mod_index)
-                if acetyl_index is not None:
-                    acetyl_subsequence_indexes[protein].add(acetyl_index)
+                mod_index = search_peptide(peptide, protein, UMB_string, mod_index)
+                if mod_index is not None:
+                    mod_subsequence_indexes[protein].add(mod_index)
     except Exception as e:
         print(f"Error processing {file}: {e}")
-    return proteins, acetyl_subsequence_indexes
+    return proteins, mod_subsequence_indexes
 
 protein_ids = set()
 subsequence_indexes = defaultdict(set)
@@ -90,7 +90,7 @@ subsequence_indexes = defaultdict(set)
 if __name__ == "__main__":
     ctx = multiprocessing.get_context("forkserver")
     with ctx.Pool(processes=multiprocessing.cpu_count()) as pool:
-        results = pool.imap_unordered(process_file, acetyl_files)
+        results = pool.imap_unordered(process_file, modification_files)
         for result, index in results:
             protein_ids.update(result)
             for key, value in index.items():
