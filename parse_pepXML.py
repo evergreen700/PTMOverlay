@@ -43,7 +43,7 @@ genebank_dict = load_genebank_sequences()
 def get_index(peptide, sequence, loc):
     """Finds peptide start index and adds location offset."""
     try:
-        return sequence.index(peptide) + loc
+        return sequence.index(peptide) + loc - 1
     except ValueError:
         return None
 
