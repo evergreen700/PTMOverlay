@@ -98,5 +98,5 @@ if __name__ == "__main__":
     with open("protein_ids.txt", "w") as file:
         for item in protein_ids:
             file.write(f"{item}\n")
-    with open("dict_data.json", "w") as file:
+    with open("protein_to_ptm_site.json", "w") as file:
         json.dump(subsequence_indexes, file, indent=4)
