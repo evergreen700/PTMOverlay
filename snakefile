@@ -8,7 +8,10 @@ import sys
 configfile: "config.yaml"
 
 ORTHOLOGS=config["orthologs_to_align"]
+PTM_TYPES=config["ptm_types"]
 PROTEOMES=config["proteome_dir"]
+PEPXML_DIR=config["pepXML_dir"]
+PTM_DIR="ptm"
 PRE_ALIGN_FASTAS=config["pre_align_fasta_dir"]
 RAW_ALIGNMENTS=config["raw_alignment_dir"]
 MUSCLE='muscle-linux-x86.v5.3' #TODO: determine muscle based on OS or move to configfile
@@ -34,7 +37,8 @@ if type(ORTHOLOGS)!=list:
 
 rule preAlignBenchmark:
   input:
-    fastas=expand(RAW_ALIGNMENTS+'/{ko}.faa', ko=ORTHOLOGS)
+    clws=expand(RAW_ALIGNMENTS+'/{ko}.faa', ko=ORTHOLOGS),
+    jsons=expand(PTM_DIR+'/{ptm}.json', ptm=PTM_TYPES)
 
 rule muscle:
   input:
@@ -45,6 +49,17 @@ rule muscle:
     '''
     mkdir -p {RAW_ALIGNMENTS}
     ./{MUSCLE} -align {input.fasta} -output {output.alignment}
+    '''
+
+rule extract_ptms:
+  input:
+    pepXML_dir=PEPXML_DIR+'/{PTM_TYPE}'
+  output:
+    ptms=PTM_DIR+'/{PTM_TYPE}.json'
+  shell:
+    '''
+    mkdir -p {PTM_DIR}
+    python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {output.ptms}
     '''
 
 rule group_orthologs:

@@ -7,12 +7,15 @@ from Bio import SeqIO
 from pathlib import Path
 import re
 import json
+import sys
 
-modification_dir = "file/path" #change to be the path to the folder of pepXML files
+modification_dir = sys.argv[1] 
 modification_files = glob.glob(os.path.join(modification_dir, "**", "*.pepXML"), recursive=True)
 
-genebank_dir = "file/path" #change to go to the folder with full protein sequence .faa files
+genebank_dir = sys.argv[2]
 genebank_files = glob.glob(os.path.join(genebank_dir, "**", "*.faa"), recursive=True)
+
+ptm_file = sys.argv[3]
 
 UMB_to_GCA = {
     'UMB0490': 'GCA_002847685.2', 'UMB0064': 'GCA_002847765.1', 'UMB1298': 'GCA_002847825.1', 
@@ -82,6 +85,7 @@ def process_file(file):
                     mod_subsequence_indexes[protein].add(mod_index)
     except Exception as e:
         print(f"Error processing {file}: {e}")
+
     return proteins, mod_subsequence_indexes
 
 protein_ids = set()
@@ -95,8 +99,9 @@ if __name__ == "__main__":
             protein_ids.update(result)
             for key, value in index.items():
                 subsequence_indexes[key].update(value)
-    with open("protein_ids.txt", "w") as file:
-        for item in protein_ids:
-            file.write(f"{item}\n")
-    with open("protein_to_ptm_site.json", "w") as file:
+    subsequence_indexes = {i:list(j) for i,j in subsequence_indexes.items()}
+#    with open("protein_ids.txt", "w") as file:
+#        for item in protein_ids:d
+#            file.write(f"{item}\nd")
+    with open(ptm_file, "w") as file:
         json.dump(subsequence_indexes, file, indent=4)
