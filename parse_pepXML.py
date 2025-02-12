@@ -62,7 +62,6 @@ UMB_pattern = re.compile(r"UMB\d{4}")
 
 def process_file(file):
     """Extracts unique proteins and site indexes from a .pepXML file."""
-    proteins = set()
     mod_subsequence_indexes = defaultdict(set)
 
     try:
@@ -71,7 +70,6 @@ def process_file(file):
             protein = search_hit.get('proteins', [{}])[0].get('protein', "")
             if not protein or protein.startswith("rev"):
                 continue
-            proteins.add(protein)
             UMB_match = UMB_pattern.search(entry.get('spectrum', ""))
             if not UMB_match:
                 continue
@@ -86,22 +84,16 @@ def process_file(file):
     except Exception as e:
         print(f"Error processing {file}: {e}")
 
-    return proteins, mod_subsequence_indexes
+    return mod_subsequence_indexes
 
-protein_ids = set()
 subsequence_indexes = defaultdict(set)
 
 if __name__ == "__main__":
     ctx = multiprocessing.get_context("forkserver")
     with ctx.Pool(processes=multiprocessing.cpu_count()) as pool:
         results = pool.imap_unordered(process_file, modification_files)
-        for result, index in results:
-            protein_ids.update(result)
-            for key, value in index.items():
-                subsequence_indexes[key].update(value)
+        for key, value in results.items():
+            subsequence_indexes[key].update(value)
     subsequence_indexes = {i:list(j) for i,j in subsequence_indexes.items()}
-#    with open("protein_ids.txt", "w") as file:
-#        for item in protein_ids:d
-#            file.write(f"{item}\nd")
     with open(ptm_file, "w") as file:
         json.dump(subsequence_indexes, file, indent=4)
