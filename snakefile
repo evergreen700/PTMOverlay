@@ -35,10 +35,14 @@ if type(ORTHOLOGS)!=list:
   sys.exit()
 #------------------RULES--------------------
 
+wildcard_constraints:
+  ko="K[0-9]+",
+  ptm_type="[A-Za-z]+"
+
 rule preAlignBenchmark:
   input:
     clws=expand(RAW_ALIGNMENTS+'/{ko}.faa', ko=ORTHOLOGS),
-    jsons=expand(PTM_DIR+'/{ptm}.json', ptm=PTM_TYPES)
+    jsons=expand(PTM_DIR+'/{ko}_{ptm_type}.json', ko=ORTHOLOGS, ptm_type=PTM_TYPES)
 
 rule muscle:
   input:
@@ -53,13 +57,13 @@ rule muscle:
 
 rule extract_ptms:
   input:
-    pepXML_dir=PEPXML_DIR+'/{PTM_TYPE}'
+    pepXML_dir=PEPXML_DIR+'/{ptm_type}'
   output:
-    ptms=PTM_DIR+'/{PTM_TYPE}.json'
+    ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
   shell:
     '''
     mkdir -p {PTM_DIR}
-    python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {output.ptms}
+    python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {PTM_DIR} {wildcards.ptm_type}
     '''
 
 rule group_orthologs:
