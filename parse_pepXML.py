@@ -79,13 +79,14 @@ def process_file(file):
     #proteins = set()
     ortho_org = dict()
 
+
     try:
         for entry in pepxml.read(file):
             search_hit = entry.get('search_hit', [{}])[0]
             protein = search_hit.get('proteins', [{}])[0].get('protein', "")
             if not protein or protein not in orthologs or protein.startswith("rev"):
                 continue
-            #proteins.add(protein)
+
             UMB_match = UMB_pattern.search(entry.get('spectrum', ""))
             if not UMB_match:
                 continue
@@ -103,10 +104,11 @@ def process_file(file):
     except Exception as e:
         print(f"Error processing {file}: {e}")
 
-    return ortho_org
+        return ortho_org
 
 protein_ids = set()
 subsequence_indexes = dict()
+
 
 if __name__ == "__main__":
     ctx = multiprocessing.get_context("forkserver")
@@ -114,16 +116,14 @@ if __name__ == "__main__":
     with ctx.Pool(processes=multiprocessing.cpu_count()) as pool:
         results = pool.imap_unordered(process_file, modification_files)
         for index in results:
-            #protein_ids.update(result)
             for key, value in index.items():
                 if key not in subsequence_indexes:
                     subsequence_indexes[key] = defaultdict(set)
                 for k, v in value.items():
                     subsequence_indexes[key][k].update(v)
-#    with open("protein_ids.txt", "w") as file:
-#        for item in protein_ids:d
-#            file.write(f"{item}\nd")
+
     for kid, a in subsequence_indexes.items():
         indexes = {i:list(j) for i,j in a.items()}
         with open(os.path.join(outdir,kid+outsuffix+".json"), "w") as file:
             json.dump(indexes, file, indent=4)
+
