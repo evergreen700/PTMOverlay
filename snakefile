@@ -41,7 +41,7 @@ wildcard_constraints:
 
 rule preAlignBenchmark:
   input:
-    clws=expand(RAW_ALIGNMENTS+'/{ko}.faa', ko=ORTHOLOGS),
+    clws=expand(RAW_ALIGNMENTS+'/{ko}.clw', ko=ORTHOLOGS),
     jsons=expand(PTM_DIR+'/{ko}_{ptm_type}_aligned.json', ko=ORTHOLOGS, ptm_type=PTM_TYPES)
 
 rule alignPTMs:
@@ -54,6 +54,15 @@ rule alignPTMs:
     '''
     python3 ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
     '''
+
+rule fastaFix:
+  input:
+    alignment=RAW_ALIGNMENTS+'/{ko}.faa'
+  output:
+    cla=RAW_ALIGNMENTS+'/{ko}.clw'
+  shell:
+    '''
+    python3 reFormatFasta.py {input.alignment} {output.cla}
 
 rule muscle:
   input:
