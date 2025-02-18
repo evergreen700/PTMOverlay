@@ -2,8 +2,7 @@
 Capstone PTM alignment
 
 ## Dependencies:
-This workflow uses MUSCLE sequence alignment. Install muscle ([https://drive5.com/muscle/](https://drive5.com/muscle/)) and make sure the path in the snakefile points to the muscle executable.\
-This workflow also uses the python packages pyteomics and snakemake
+This workflow uses the python packages pyteomics and snakemake
 ```
 pip install pyteomics snakemake
 ```
