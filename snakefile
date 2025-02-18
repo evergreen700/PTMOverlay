@@ -63,6 +63,7 @@ rule fastaFix:
   shell:
     '''
     python3 reFormatFasta.py {input.alignment} {output.cla}
+    '''
 
 rule muscle:
   input:
