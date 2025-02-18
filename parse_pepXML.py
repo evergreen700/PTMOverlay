@@ -76,9 +76,7 @@ def process_file(file):
             if len(pair) == 2:
                 orthologs[pair[0]]=pair[1]
 
-    #proteins = set()
     ortho_org = dict()
-
 
     try:
         for entry in pepxml.read(file):
@@ -86,7 +84,6 @@ def process_file(file):
             protein = search_hit.get('proteins', [{}])[0].get('protein', "")
             if not protein or protein not in orthologs or protein.startswith("rev"):
                 continue
-
             UMB_match = UMB_pattern.search(entry.get('spectrum', ""))
             if not UMB_match:
                 continue
@@ -104,11 +101,10 @@ def process_file(file):
     except Exception as e:
         print(f"Error processing {file}: {e}")
 
-        return ortho_org
+    return ortho_org
 
 protein_ids = set()
 subsequence_indexes = dict()
-
 
 if __name__ == "__main__":
     ctx = multiprocessing.get_context("forkserver")
@@ -121,9 +117,7 @@ if __name__ == "__main__":
                     subsequence_indexes[key] = defaultdict(set)
                 for k, v in value.items():
                     subsequence_indexes[key][k].update(v)
-
     for kid, a in subsequence_indexes.items():
         indexes = {i:list(j) for i,j in a.items()}
         with open(os.path.join(outdir,kid+outsuffix+".json"), "w") as file:
             json.dump(indexes, file, indent=4)
-
