@@ -8,7 +8,10 @@ import sys
 configfile: "config.yaml"
 
 ORTHOLOGS=config["orthologs_to_align"]
+PTM_TYPES=config["ptm_types"]
 PROTEOMES=config["proteome_dir"]
+PEPXML_DIR=config["pepXML_dir"]
+PTM_DIR="ptm"
 PRE_ALIGN_FASTAS=config["pre_align_fasta_dir"]
 RAW_ALIGNMENTS=config["raw_alignment_dir"]
 MUSCLE='runMUSCLE.py'
@@ -32,9 +35,25 @@ if type(ORTHOLOGS)!=list:
   sys.exit()
 #------------------RULES--------------------
 
-rule preAnnotateBenchmark:
+wildcard_constraints:
+  ko="K[0-9]+",
+  ptm_type="[A-Za-z]+"
+
+rule preAlignBenchmark:
   input:
-    fastas=expand(RAW_ALIGNMENTS+'/{ko}.clw', ko=ORTHOLOGS)
+    clws=expand(RAW_ALIGNMENTS+'/{ko}.clw', ko=ORTHOLOGS),
+    jsons=expand(PTM_DIR+'/{ko}_{ptm_type}_aligned.json', ko=ORTHOLOGS, ptm_type=PTM_TYPES)
+
+rule alignPTMs:
+  input:
+    fasta=RAW_ALIGNMENTS+'/{ko}.faa',
+    ptms=PTM_DIR+'/{ko}_{ptm_type}.json'
+  output:
+    ptms=PTM_DIR+'/{ko}_{ptm_type}_aligned.json'
+  shell:
+    '''
+    python3 ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
+    '''
 
 rule fastaFix:
   input:
@@ -44,7 +63,6 @@ rule fastaFix:
   shell:
     '''
     python3 reFormatFasta.py {input.alignment} {output.cla}
-    '''
 
 rule muscle:
   input:
@@ -55,6 +73,17 @@ rule muscle:
     '''
     mkdir -p {RAW_ALIGNMENTS}
     python3 {MUSCLE} {input.fasta} {output.alignment}
+    '''
+
+rule extract_ptms:
+  input:
+    pepXML_dir=PEPXML_DIR+'/{ptm_type}'
+  output:
+    ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
+  shell:
+    '''
+    mkdir -p {PTM_DIR}
+    python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {PTM_DIR} {wildcards.ptm_type}
     '''
 
 rule group_orthologs:
