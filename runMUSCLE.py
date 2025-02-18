@@ -46,6 +46,8 @@ if __name__ == "__main__":
     in_file = sys.argv[1]
     out_file = sys.argv[2]
 
+    os.makedirs(os.path.dirname(out_file), exist_ok=True)
+
     parameters = ["-align", in_file, "-output", out_file]
     run_muscle(parameters)
 

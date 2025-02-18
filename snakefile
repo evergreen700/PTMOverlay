@@ -72,7 +72,6 @@ rule muscle:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa'
   shell:
     '''
-    mkdir -p {RAW_ALIGNMENTS}
     python3 {MUSCLE} {input.fasta} {output.alignment}
     '''
 
@@ -83,7 +82,6 @@ rule extract_ptms:
     ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
   shell:
     '''
-    mkdir -p {PTM_DIR}
     python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {PTM_DIR} {wildcards.ptm_type}
     '''
 

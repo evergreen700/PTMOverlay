@@ -16,6 +16,8 @@ genebank_dir = sys.argv[2]
 genebank_files = glob.glob(os.path.join(genebank_dir, "**", "*.faa"), recursive=True)
 
 outdir = sys.argv[3]
+os.makedirs(outdir, exist_ok=True)
+
 if len(sys.argv) > 4:
     outsuffix = "_"+sys.argv[4]
 else:

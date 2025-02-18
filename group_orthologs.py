@@ -6,8 +6,8 @@ PROTEOME_PATH = sys.argv[1]
 PRE_ALIGN_PATH = sys.argv[2]
 covered_kos = set()
 proteomes = glob.glob(os.path.join(PROTEOME_PATH,"*.faa"))
-if not os.path.exists(PRE_ALIGN_PATH): 
-    os.makedirs(PRE_ALIGN_PATH) 
+
+os.makedirs(PRE_ALIGN_PATH, exist_ok=True)
 
 for p in proteomes:
     ka = p[:-4]+".kegg.txt"
