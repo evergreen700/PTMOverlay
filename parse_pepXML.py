@@ -53,6 +53,7 @@ def get_index(peptide, sequence, loc):
     """Finds peptide start index and adds location offset."""
     try:
         i = sequence.index(peptide)
+        #filter out locs that are 0/-1
         return [i + int(m["position"]) - 1 for m in loc if int(m["position"])>0]
     except ValueError:
         return None
@@ -94,10 +95,6 @@ def process_file(file):
             UMB_string = UMB_match.group()
             modifications = search_hit.get('modifications', [])
             if modifications:
-                #mod_index = int(m['position'])
-                #if mod_index == 0:
-                #    #weird artifact/terminal modification we don't want to worry about
-                #    continue
                 peptide = search_hit.get('peptide', "")
                 mod_indices = search_peptide(peptide, protein, UMB_string, modifications)
                 if mod_indices != []:
