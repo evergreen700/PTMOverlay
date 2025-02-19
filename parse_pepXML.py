@@ -52,16 +52,18 @@ genebank_dict = load_genebank_sequences()
 def get_index(peptide, sequence, loc):
     """Finds peptide start index and adds location offset."""
     try:
-        return sequence.index(peptide) + loc - 1
+        i = sequence.index(peptide)
+        return [i + int(m["position"]) - 1 for m in loc if int(m["position"])>0]
     except ValueError:
         return None
 
-def search_peptide(peptide, protein_id, UMB, location):
+def search_peptide(peptide, protein_id, UMB, locations):
     """Searches for a peptide within a protein sequence stored in memory."""
     GCA = UMB_to_GCA.get(UMB, 'NA') + ".faa"
     sequence = genebank_dict.get(GCA, {}).get(protein_id)
     if sequence:
-        return get_index(peptide, sequence, location)
+        g = get_index(peptide, sequence, locations)
+        return get_index(peptide, sequence, locations)
     return None
 
 UMB_pattern = re.compile(r"UMB\d{4}")
@@ -92,14 +94,17 @@ def process_file(file):
             UMB_string = UMB_match.group()
             modifications = search_hit.get('modifications', [])
             if modifications:
-                mod_index = int(modifications[-1]['position'])
+                #mod_index = int(m['position'])
+                #if mod_index == 0:
+                #    #weird artifact/terminal modification we don't want to worry about
+                #    continue
                 peptide = search_hit.get('peptide', "")
-                mod_index = search_peptide(peptide, protein, UMB_string, mod_index)
-                if mod_index is not None:
+                mod_indices = search_peptide(peptide, protein, UMB_string, modifications)
+                if mod_indices != []:
                     o = orthologs[protein]
                     if o not in ortho_org:
                         ortho_org[o] = defaultdict(set)
-                    ortho_org[o][protein+", "+assembly].add(mod_index)
+                    ortho_org[o][protein+", "+assembly].update(mod_indices)
     except Exception as e:
         print(f"Error processing {file}: {e}")
 
