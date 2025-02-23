@@ -41,7 +41,7 @@ wildcard_constraints:
 
 rule preAlignBenchmark:
   input:
-    clws=expand(RAW_ALIGNMENTS+'/{ko}_{ptm_type}.txt', ko=ORTHOLOGS, ptm_type=PTM_TYPES),
+    html=expand(RAW_ALIGNMENTS+'/{ko}_{ptm_type}.html', ko=ORTHOLOGS, ptm_type=PTM_TYPES),
     jsons=expand(PTM_DIR+'/{ko}_{ptm_type}_aligned.json', ko=ORTHOLOGS, ptm_type=PTM_TYPES)
 
 rule alignPTMs:
@@ -60,7 +60,7 @@ rule fastaAnnotate:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa',
     ptms=PTM_DIR+'/{ko}_{ptm_type}_aligned.json'
   output:
-    cla=RAW_ALIGNMENTS+'/{ko}_{ptm_type}.txt'
+    html=RAW_ALIGNMENTS+'/{ko}_{ptm_type}.html'
   shell:
     '''
     python3 reFormatFasta.py {input.alignment} {input.ptms} {output.cla}
