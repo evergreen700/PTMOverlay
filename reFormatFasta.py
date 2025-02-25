@@ -22,6 +22,12 @@ sequences.append(seq)
 with open(inPTM,"r") as readIn:
     ptms = json.load(readIn)
 
+for k in ptms.keys():
+    ptms[k]['read_start'] = {int(i):j for i,j in ptms[k]['read_start'].items()}
+    ptms[k]['read_end'] = {int(i):j for i,j in ptms[k]['read_end'].items()}
+
+print(ptms)
+
 with open(outFile, "w") as writer:
     #print header
     writer.write('''
@@ -40,13 +46,14 @@ with open(outFile, "w") as writer:
     keyOrder = []
     for i in range(len(sequences)):
         seq = sequences[i].popleft().strip()
-        print('s',seq)
         writer.write('<tr><td>'+f"{i:>2}:"+'</td><td>'+seq+'</td></tr>\n')
         keyOrder.append(seq)
     writer.write('''</table><table>
                         <tr>
                                 <td class="spacer"></td>
                         </tr>''')
+
+    coverages = {k:0 for k in keyOrder}
 
     while len(sequences[0]) != 0:
         iters = 0
@@ -57,8 +64,14 @@ with open(outFile, "w") as writer:
             idx = iters
             for a in seq:
                 c = ""
-                if a != "-" and idx in ptms[keyOrder[i]]:
-                    c='primaryHighlight Phospho secondaryHighlight'
+                if idx in ptms[keyOrder[i]]['read_start']:
+                    coverages[keyOrder[i]]+=ptms[keyOrder[i]]['read_start'][idx]
+                if idx in ptms[keyOrder[i]]['read_end']:
+                    coverages[keyOrder[i]]-=ptms[keyOrder[i]]['read_end'][idx]
+                if a != "-" and idx in ptms[keyOrder[i]]['mod_site']:
+                    c='primaryHighlight Phospho '
+                if coverages[keyOrder[i]] > 0:
+                    c+='secondaryHighlight'
                 writer.write('<span class="'+c+'" title>'+a+'</span>')
                 idx+=1
             writer.write('</pre></td></tr>')

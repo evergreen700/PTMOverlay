@@ -54,7 +54,7 @@ def get_index(peptide, sequence, loc):
     try:
         i = sequence.index(peptide)
         #filter out locs that are 0/-1
-        return [i + int(m["position"]) - 1 for m in loc if int(m["position"])>0]
+        return i, i+len(peptide), [i + int(m["position"]) - 1 for m in loc if int(m["position"])>0]
     except ValueError:
         return None
 
@@ -63,7 +63,6 @@ def search_peptide(peptide, protein_id, UMB, locations):
     GCA = UMB_to_GCA.get(UMB, 'NA') + ".faa"
     sequence = genebank_dict.get(GCA, {}).get(protein_id)
     if sequence:
-        g = get_index(peptide, sequence, locations)
         return get_index(peptide, sequence, locations)
     return None
 
@@ -96,12 +95,16 @@ def process_file(file):
             modifications = search_hit.get('modifications', [])
             if modifications:
                 peptide = search_hit.get('peptide', "")
-                mod_indices = search_peptide(peptide, protein, UMB_string, modifications)
+                startIdx, endIdx, mod_indices = search_peptide(peptide, protein, UMB_string, modifications)
                 if mod_indices != []:
                     o = orthologs[protein]
                     if o not in ortho_org:
-                        ortho_org[o] = defaultdict(set)
-                    ortho_org[o][protein+", "+assembly].update(mod_indices)
+                        ortho_org[o] = dict()
+                    if protein+", "+assembly not in ortho_org[o]:
+                        ortho_org[o][protein+", "+assembly] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
+                    ortho_org[o][protein+", "+assembly]['read_start'][startIdx]=ortho_org[o][protein+", "+assembly]['read_start'].get(startIdx,0)+1
+                    ortho_org[o][protein+", "+assembly]['read_end'][endIdx]=ortho_org[o][protein+", "+assembly]['read_end'].get(endIdx,0)+1
+                    ortho_org[o][protein+", "+assembly]['mod_site'].update(mod_indices)
     except Exception as e:
         print(f"Error processing {file}: {e}")
 
@@ -118,10 +121,25 @@ if __name__ == "__main__":
         for index in results:
             for key, value in index.items():
                 if key not in subsequence_indexes:
-                    subsequence_indexes[key] = defaultdict(set)
+                    subsequence_indexes[key] = dict()
                 for k, v in value.items():
-                    subsequence_indexes[key][k].update(v)
+                    if k not in subsequence_indexes[key]:
+                        subsequence_indexes[key][k] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
+
+                    for ki,vi in v['read_start'].items():
+                        if ki not in subsequence_indexes[key][k]['read_start']:
+                            subsequence_indexes[key][k]['read_start'][ki] = 0
+                        subsequence_indexes[key][k]['read_start'][ki]+=vi
+
+                    for ki,vi in v['read_end'].items():
+                        if ki not in subsequence_indexes[key][k]['read_end']:
+                            subsequence_indexes[key][k]['read_end'][ki] = 0
+                        subsequence_indexes[key][k]['read_end'][ki]+=vi
+
+                    subsequence_indexes[key][k]['mod_site'].update(v['mod_site'])
     for kid, a in subsequence_indexes.items():
-        indexes = {i:list(j) for i,j in a.items()}
+        for i in a.keys():
+            a[i]["mod_site"] = list(a[i]["mod_site"])
+        #indexes = {i:list(j) for i,j in a.items()}
         with open(os.path.join(outdir,kid+outsuffix+".json"), "w") as file:
-            json.dump(indexes, file, indent=4)
+            json.dump(a, file, indent=4)
