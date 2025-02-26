@@ -1,12 +1,8 @@
-from pyteomics import pepxml
 import glob
 import os
-import multiprocessing
 from collections import defaultdict
-from Bio import SeqIO
 from pathlib import Path
 import re
-import json
 import sys
 
 modification_dir = sys.argv[1] 
@@ -40,6 +36,8 @@ UMB_to_GCA = {
 #load the full protein sequences into memory
 def load_genebank_sequences():
     """Preloads all .faa sequences into a nested dictionary {GCA: {protein_id: sequence}} for fast lookups."""
+    from Bio import SeqIO
+
     genebank_dict = defaultdict(dict)
     for file in genebank_files:
         GCA_name = Path(file).name
@@ -68,6 +66,8 @@ UMB_pattern = re.compile(r"UMB\d{4}")
 
 def process_file(file):
     """Extracts unique proteins and site indexes from a .pepXML file."""
+    from pyteomics import pepxml
+
     UMB = UMB_pattern.search(os.path.basename(file)).group()
     assembly = UMB_to_GCA.get(UMB, 'NA')
     ka = os.path.join(genebank_dir, assembly+".kegg.txt")
@@ -109,6 +109,9 @@ protein_ids = set()
 subsequence_indexes = dict()
 
 if __name__ == "__main__":
+    import multiprocessing
+    import json
+
     ctx = multiprocessing.get_context("spawn")
 
     with ctx.Pool(processes=multiprocessing.cpu_count()) as pool:
