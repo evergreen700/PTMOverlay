@@ -20,7 +20,7 @@ def detect_executable():
             return "executables/muscle-linux-x86.v5.3"
     elif system == "Darwin":  # macOS
         if "arm64" in machine:
-            return "executables/muscle-osx-arm64.v5.3"
+            return "executables/muscle3.8.31_i86darwin64"
         elif "x86_64" in machine:
             return "executables/muscle-osx-x86.v5.3"
     else:
@@ -36,9 +36,15 @@ def run_muscle(parameters):
         sys.exit(1)
 
     # for macOS/Linux, ensure the file has execution permission
-    # if platform.system() != "Windows":
-    #     os.chmod(executable, 0o755)
+    if platform.system() != "Windows":
+        os.chmod(executable, 0o755)
 
+    if platform.system() == "Darwin":
+        parameters[0] = "-in"
+        parameters[2] = "-out"
+
+    #if executables are not working, install muscle through conda and uncomment next line
+    # executable = "muscle"
     subprocess.run([executable] + parameters)
 
 if __name__ == "__main__":
@@ -50,4 +56,3 @@ if __name__ == "__main__":
 
     parameters = ["-align", in_file, "-output", out_file]
     run_muscle(parameters)
-
