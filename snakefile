@@ -37,11 +37,12 @@ if type(ORTHOLOGS)!=list:
 
 wildcard_constraints:
   ko="K[0-9]+",
-  ptm_type="[A-Za-z]+"
+  ptm_type="[A-Za-z]+",
+  ptm_types="[A-Za-z_]+"
 
 rule preAlignBenchmark:
   input:
-    html=expand(RAW_ALIGNMENTS+'/{ko}_{ptm_type}.html', ko=ORTHOLOGS, ptm_type=PTM_TYPES),
+    html=expand(RAW_ALIGNMENTS+'/{ko}__{ptm_type}.html', ko=ORTHOLOGS, ptm_type="_".join(PTM_TYPES)),
     jsons=expand(PTM_DIR+'/{ko}_{ptm_type}_aligned.json', ko=ORTHOLOGS, ptm_type=PTM_TYPES)
 
 rule alignPTMs:
@@ -58,12 +59,12 @@ rule alignPTMs:
 rule fastaAnnotate:
   input:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa',
-    ptms=PTM_DIR+'/{ko}_{ptm_type}_aligned.json'
+    ptms=expand(PTM_DIR+'/{{ko}}_{pt}_aligned.json', pt=lambda w: w.ptm_types.split("_"))
   output:
-    html=RAW_ALIGNMENTS+'/{ko}_{ptm_type}.html'
+    html=RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html'
   shell:
     '''
-    python3 reFormatFasta.py {input.alignment} {input.ptms} {output.html}
+    python3 reFormatFasta.py {input.alignment} {output.html} {input.ptms} 
     '''
 
 rule muscle:
@@ -78,12 +79,13 @@ rule muscle:
 
 rule extract_ptms:
   input:
-    pepXML_dir=PEPXML_DIR+'/{ptm_type}'
+    pepXML_dir=PEPXML_DIR+'/{ptm_type}',
+    mass='ptm_mass.yaml'
   output:
     ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
   shell:
     '''
-    python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {PTM_DIR} {wildcards.ptm_type}
+    python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {PTM_DIR} {wildcards.ptm_type}
     '''
 
 rule group_orthologs:

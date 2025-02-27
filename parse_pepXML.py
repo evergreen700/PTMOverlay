@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import json
 import sys
+import yaml
 
 modification_dir = sys.argv[1] 
 modification_files = glob.glob(os.path.join(modification_dir, "**", "*.pepXML"), recursive=True)
@@ -15,13 +16,23 @@ modification_files = glob.glob(os.path.join(modification_dir, "**", "*.pepXML"),
 genebank_dir = sys.argv[2]
 genebank_files = glob.glob(os.path.join(genebank_dir, "**", "*.faa"), recursive=True)
 
-outdir = sys.argv[3]
+ptm_info = sys.argv[3]
+
+outdir = sys.argv[4]
 os.makedirs(outdir, exist_ok=True)
 
-if len(sys.argv) > 4:
-    outsuffix = "_"+sys.argv[4]
+with open(ptm_info, "r") as inFile:
+    ptm_mass = yaml.load(inFile, Loader=yaml.CLoader)
+
+if len(sys.argv) > 5:
+    outsuffix = "_"+sys.argv[5]
+    shift_size=ptm_mass[sys.argv[5]]
 else:
     outsuffix = ""
+    shift_size = 0
+
+aa_mass = ptm_mass["base"]
+
 
 UMB_to_GCA = {
     'UMB0490': 'GCA_002847685.2', 'UMB0064': 'GCA_002847765.1', 'UMB1298': 'GCA_002847825.1', 
@@ -54,7 +65,7 @@ def get_index(peptide, sequence, loc):
     try:
         i = sequence.index(peptide)
         #filter out locs that are 0/-1
-        return i, i+len(peptide), [i + int(m["position"]) - 1 for m in loc if int(m["position"])>0]
+        return i, i+len(peptide), [i + int(m["position"]) - 1 for m in loc if int(m["position"])>0 and aa_mass[sequence[int(m['position'])]]+shift_size == int(m['mass'])]
     except ValueError:
         return None
 
@@ -96,15 +107,14 @@ def process_file(file):
             if modifications:
                 peptide = search_hit.get('peptide', "")
                 startIdx, endIdx, mod_indices = search_peptide(peptide, protein, UMB_string, modifications)
-                if mod_indices != []:
-                    o = orthologs[protein]
-                    if o not in ortho_org:
-                        ortho_org[o] = dict()
-                    if protein+", "+assembly not in ortho_org[o]:
-                        ortho_org[o][protein+", "+assembly] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
-                    ortho_org[o][protein+", "+assembly]['read_start'][startIdx]=ortho_org[o][protein+", "+assembly]['read_start'].get(startIdx,0)+1
-                    ortho_org[o][protein+", "+assembly]['read_end'][endIdx]=ortho_org[o][protein+", "+assembly]['read_end'].get(endIdx,0)+1
-                    ortho_org[o][protein+", "+assembly]['mod_site'].update(mod_indices)
+                o = orthologs[protein]
+                if o not in ortho_org:
+                    ortho_org[o] = dict()
+                if protein+", "+assembly not in ortho_org[o]:
+                    ortho_org[o][protein+", "+assembly] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
+                ortho_org[o][protein+", "+assembly]['read_start'][startIdx]=ortho_org[o][protein+", "+assembly]['read_start'].get(startIdx,0)+1
+                ortho_org[o][protein+", "+assembly]['read_end'][endIdx]=ortho_org[o][protein+", "+assembly]['read_end'].get(endIdx,0)+1
+                ortho_org[o][protein+", "+assembly]['mod_site'].update(mod_indices)
     except Exception as e:
         print(f"Error processing {file}: {e}")
 
