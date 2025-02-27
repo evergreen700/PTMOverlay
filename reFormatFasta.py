@@ -54,7 +54,7 @@ for f in inPTM:
 print(starts)
 #print(ends)
 
-colors=["red","blue","green","purple","orange"]
+colors=["#fc1c03","#0324fc","#03fc0f","#fc03e7","#b59a4a"]
 
 with open(outFile, "w") as writer:
     #print header
@@ -116,7 +116,7 @@ with open(outFile, "w") as writer:
     writer.write(''' </table><form>
                     <table>''')
     for pt in ptm_types:
-        writer.write('''<tr><td><input type="checkbox" name="'''+pt+'''" checked="checked" /><td>'''+pt+'''</td></td></tr>''')
+        writer.write('''<tr><td><input type="checkbox" name="'''+pt+'''" checked="checked" /><td class="'''+pt+'''">'''+pt+'''</td></td></tr>''')
     writer.write('''</table><script>
                             $(document).ready(function () {    $('input').on('change', function (d) {        $('.' + $(this).attr('name')).css('color', function (d) {            return $(this).css('color') === "rgb(0, 0, 0)" ? 'var(--hidden-color)' : "rgb(0, 0, 0)";        });    });});
                     </script>

@@ -5,6 +5,8 @@ raw_alignment_dir: rawAlign #this directory does not need to exist
 ptm_types:
   - Phospho
   - MonoMethyl
+  - DiMethyl
+  - TriMethyl
 orthologs_to_align: #can also provide a minimum coverage instead of specific ids (ie, all>31) but this will generate a ton of files and may cause snakemake to crash due to filesystem delays. You have been warned
    - K00016
    - K01689
