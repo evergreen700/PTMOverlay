@@ -1,0 +1,29 @@
+Phospho: 80
+Acetyl: 42
+MonoMethyl: 14
+DiMethyl: 28
+TriMethyl: 42
+#
+#Add other PTM shifts above this line
+base:
+  G: 57
+  A: 71
+  S: 87
+  P: 97
+  V: 99
+  T: 101
+  C: 103
+  I: 113
+  L: 113
+  N: 114
+  D: 115
+  Q: 128
+  K: 128
+  E: 129
+  M: 131
+  H: 137
+  F: 147
+  R: 156
+  Y: 163
+  W: 186
+
