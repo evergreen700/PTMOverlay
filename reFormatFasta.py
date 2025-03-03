@@ -76,7 +76,7 @@ with open(outFile, "w") as writer:
     keyOrder = []
     for i in range(len(sequences)):
         seq = sequences[i].popleft().strip()
-        writer.write('<tr><td>'+f"{i:>2}:"+'</td><td>'+seq+'</td></tr>\n')
+        writer.write('<tr><td>'+str(i+1)+':</td><td>'+seq+'</td></tr>\n')
         keyOrder.append(seq)
     writer.write('''</table><table>
                         <tr>
@@ -89,7 +89,7 @@ with open(outFile, "w") as writer:
 
     while len(sequences[0]) != 0:
         for i in range(len(sequences)):
-            writer.write('<tr><td><span class="lineHeader" title="'+keyOrder[i]+'">'+str(i)+'</span></td><td><pre>')
+            writer.write('<tr><td><span class="lineHeader" title="'+keyOrder[i]+'">'+str(i+1)+'</span></td><td><pre>')
             #writer.write(f"{i:>2} ")
             seq = sequences[i].popleft().strip()
             idx = iters
