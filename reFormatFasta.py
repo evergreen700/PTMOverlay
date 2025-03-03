@@ -5,18 +5,32 @@ import json
 
 inFile = sys.argv[1]
 outFile = sys.argv[2]
-inPTM = sys.argv[3:]
+window = int(sys.argv[3])
+inPTM = sys.argv[4:]
 sequences = []
+seqIDs = []
 with open(inFile,"r") as readIn:
-    seq = deque([readIn.readline()[1:]])
-    line = readIn.readline()
+    seqIDs.append(readIn.readline().strip()[1:])
+    seq = []
+    line = readIn.readline().strip()
     while line:
         if line[0] == ">":
+            s = "".join(seq)
+            seq = deque()
+            for i in range(0,len(s),window):
+                seq.append(s[i:i+window])
+            del s
             sequences.append(seq)
-            seq = deque([line[1:]])
+            seqIDs.append(line[1:])
+            seq = []
         else:
             seq.append(line)
-        line=readIn.readline()
+        line=readIn.readline().strip()
+s = "".join(seq)
+seq = deque()
+for i in range(0,len(s),window):
+    seq.append(s[i:i+window])
+del s
 sequences.append(seq)
 
 ptm_types = []
@@ -45,19 +59,11 @@ for f in inPTM:
                     ends[k][ii] = 0
                 ends[k][ii]+=j
 
-#for k in ptms.keys():
-#    ptms[k]['read_start'] = {int(i):j for i,j in ptms[k]['read_start'].items()}
-#    ptms[k]['read_end'] = {int(i):j for i,j in ptms[k]['read_end'].items()}
-
-#print(ptm_types)
-#print(ptms)
-print(starts)
-#print(ends)
 
 colors=["#fc1c03","#0324fc","#03fc0f","#fc03e7","#b59a4a"]
 
 with open(outFile, "w") as writer:
-    #print header
+    #write header
     writer.write('''
     <html>
         <head>
@@ -71,11 +77,11 @@ with open(outFile, "w") as writer:
         </head><body>
                 <h1 class="title">
     ''')
-    writer.write(outFile+'\n')
+    writer.write(os.path.basename(outFile))
     writer.write('</h1><table>\n')
     keyOrder = []
     for i in range(len(sequences)):
-        seq = sequences[i].popleft().strip()
+        seq = seqIDs[i]
         writer.write('<tr><td>'+str(i+1)+':</td><td>'+seq+'</td></tr>\n')
         keyOrder.append(seq)
     writer.write('''</table><table>

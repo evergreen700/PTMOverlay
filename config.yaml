@@ -4,6 +4,7 @@ pre_align_fasta_dir: preAlign #this directory does not need to exist
 raw_alignment_dir: rawAlign #this directory does not need to exist
 ptm_types:
   - Phospho
+  - AcetylCarbamyl
   - MonoMethyl
   - DiMethyl
   - TriMethyl

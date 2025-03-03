@@ -64,7 +64,7 @@ rule fastaAnnotate:
     html=RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html'
   shell:
     '''
-    python3 reFormatFasta.py {input.alignment} {output.html} {input.ptms} 
+    python3 reFormatFasta.py {input.alignment} {output.html} 100 {input.ptms} 
     '''
 
 rule muscle:
