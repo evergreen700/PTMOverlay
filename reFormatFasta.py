@@ -12,6 +12,8 @@ inPTM = sys.argv[3:]
 #these are the colors assigned to the PTMs in the order they are presented in.
 colors=["#fc1c03","#0324fc","#03fc0f","#fc03e7","#b59a4a"]
 
+os.makedirs(os.path.dirname(outFile), exist_ok=True)
+
 with open("config.yaml","r") as confFile:
     config = yaml.load(confFile, Loader=yaml.CLoader)
 

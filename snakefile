@@ -11,10 +11,11 @@ ORTHOLOGS=config["orthologs_to_align"]
 PTM_TYPES=config["ptm_types"]
 PROTEOMES=config["proteome_dir"]
 PEPXML_DIR=config["pepXML_dir"]
-PTM_DIR="ptm"
+PTM_DIR=config["ptm_dir"]
 PRE_ALIGN_FASTAS=config["pre_align_fasta_dir"]
 RAW_ALIGNMENTS=config["raw_alignment_dir"]
 MUSCLE='runMUSCLE.py'
+FINAL_ALIGNMENTS=config["final_alignment_dir"]
 
 #----------HANDLING FOR "ALL" KO'S----------
 if type(ORTHOLOGS)==str and OHRTHOLOGS[:4].upper() == "ALL>":
@@ -42,7 +43,7 @@ wildcard_constraints:
 
 rule preAlignBenchmark:
   input:
-    html=expand(RAW_ALIGNMENTS+'/{ko}__{ptm_type}.html', ko=ORTHOLOGS, ptm_type="_".join(PTM_TYPES)),
+    html=expand(FINAL_ALIGNMENTS+'/{ko}__{ptm_type}.html', ko=ORTHOLOGS, ptm_type="_".join(PTM_TYPES)),
     jsons=expand(PTM_DIR+'/{ko}_{ptm_type}_aligned.json', ko=ORTHOLOGS, ptm_type=PTM_TYPES)
 
 rule alignPTMs:
@@ -61,7 +62,7 @@ rule fastaAnnotate:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa',
     ptms=expand(PTM_DIR+'/{{ko}}_{pt}_aligned.json', pt=lambda w: w.ptm_types.split("_"))
   output:
-    html=RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html'
+    html=FINAL_ALIGNMENTS+'/{ko}__{ptm_types}.html'
   shell:
     '''
     python3 reFormatFasta.py {input.alignment} {output.html} {input.ptms} 
