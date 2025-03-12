@@ -62,7 +62,11 @@ rule fastaFix:
     cla=RAW_ALIGNMENTS+'/{ko}.clw'
   shell:
     '''
+<<<<<<< Updated upstream
     python reFormatFasta.py {input.alignment} {output.cla}
+=======
+    python reFormatFasta.py {input.alignment} {input.ptms} {output.html}
+>>>>>>> Stashed changes
     '''
 
 rule muscle:
