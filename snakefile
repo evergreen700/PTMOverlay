@@ -53,7 +53,7 @@ rule alignPTMs:
     ptms=PTM_DIR+'/{ko}_{ptm_type}_aligned.json'
   shell:
     '''
-    python3 ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
+    python ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
     '''
 
 rule fastaAnnotate:
@@ -64,7 +64,7 @@ rule fastaAnnotate:
     html=RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html'
   shell:
     '''
-    python3 reFormatFasta.py {input.alignment} {output.html} {input.ptms} 
+    python reFormatFasta.py {input.alignment} {output.html} {input.ptms}
     '''
 
 rule muscle:
@@ -74,7 +74,7 @@ rule muscle:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa'
   shell:
     '''
-    python3 {MUSCLE} {input.fasta} {output.alignment}
+    python {MUSCLE} {input.fasta} {output.alignment}
     '''
 
 rule extract_ptms:
@@ -85,7 +85,7 @@ rule extract_ptms:
     ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
   shell:
     '''
-    python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {PTM_DIR} {wildcards.ptm_type}
+    python parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {PTM_DIR} {wildcards.ptm_type}
     '''
 
 rule group_orthologs:
@@ -93,5 +93,5 @@ rule group_orthologs:
     fastas=expand(PRE_ALIGN_FASTAS+'/{ko}.faa', ko=ORTHOLOGS)
   shell:
     '''
-    python3 group_orthologs.py {PROTEOMES} {PRE_ALIGN_FASTAS}
+    python group_orthologs.py {PROTEOMES} {PRE_ALIGN_FASTAS}
     '''    

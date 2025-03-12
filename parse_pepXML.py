@@ -9,6 +9,7 @@ import re
 import json
 import sys
 import yaml
+import csv
 
 modification_dir = sys.argv[1] 
 modification_files = glob.glob(os.path.join(modification_dir, "**", "*.pepXML"), recursive=True)
@@ -34,19 +35,15 @@ else:
 aa_mass = ptm_mass["base"]
 
 
-UMB_to_GCA = {
-    'UMB0490': 'GCA_002847685.2', 'UMB0064': 'GCA_002847765.1', 'UMB1298': 'GCA_002847825.1', 
-    'UMB0085': 'GCA_002861815.1', 'UMB0386': 'GCA_002861965.1', 'UMB0388': 'GCA_002871555.1',
-    'UMB0411': 'GCA_002871635.1', 'UMB0089': 'GCA_002871815.1', 'UMB0049': 'GCA_002884585.1',
-    'UMB0663': 'GCA_002884815.1', 'UMB0088': 'GCA_002884955.3', 'UMB0683': 'GCA_002940945.1',
-    'UMB3669': 'GCA_003286645.3', 'UMB0574': 'GCA_003286795.2', 'UMB0607': 'GCA_007785995.1',
-    'UMB0637': 'GCA_008726885.1', 'UMB0572': 'GCA_008727025.1', 'UMB0248': 'GCA_008727075.1',
-    'UMB0639': 'GCA_008728115.1', 'UMB0613': 'GCA_030218505.1', 'UMB0725': 'GCA_030218525.1',
-    'UMB0612': 'GCA_030218565.1', 'UMB0029': 'GCA_030218815.1', 'UMB0016': 'GCA_030218925.1',
-    'UMB2445': 'GCA_030222485.2', 'UMB0026': 'GCA_030225245.1', 'UMB0025': 'GCA_030225265.1',
-    'UMB0734': 'GCA_030226495.1', 'UMB0005': 'GCA_030226535.1', 'UMB0036': 'GCA_030230945.1',
-    'UMB0434': 'GCA_019890915.1'
-}
+UMB_to_GCA = {}
+# read data from tsv config into dictionary of umb: tuple(species, assembly)
+with open("index_umb_taxa_gca.tsv", mode="r", newline="") as file:
+    reader = csv.reader(file, delimiter="\t")
+    headers = next(reader)
+    for row in reader:
+        key = row[1]
+        value = (row[2], row[3])
+        UMB_to_GCA[key] = value
 
 #load the full protein sequences into memory
 def load_genebank_sequences():
@@ -71,7 +68,7 @@ def get_index(peptide, sequence, loc):
 
 def search_peptide(peptide, protein_id, UMB, locations):
     """Searches for a peptide within a protein sequence stored in memory."""
-    GCA = UMB_to_GCA.get(UMB, 'NA') + ".faa"
+    GCA = UMB_to_GCA.get(UMB, 'NA')[1] + ".faa"
     sequence = genebank_dict.get(GCA, {}).get(protein_id)
     if sequence:
         return get_index(peptide, sequence, locations)
@@ -82,7 +79,7 @@ UMB_pattern = re.compile(r"UMB\d{4}")
 def process_file(file):
     """Extracts unique proteins and site indexes from a .pepXML file."""
     UMB = UMB_pattern.search(os.path.basename(file)).group()
-    assembly = UMB_to_GCA.get(UMB, 'NA')
+    species, assembly = UMB_to_GCA.get(UMB, 'NA')
     ka = os.path.join(genebank_dir, assembly+".kegg.txt")
     orthologs = dict()
     with open(ka,"r") as inFile:
@@ -110,11 +107,11 @@ def process_file(file):
                 o = orthologs[protein]
                 if o not in ortho_org:
                     ortho_org[o] = dict()
-                if protein+", "+assembly not in ortho_org[o]:
-                    ortho_org[o][protein+", "+assembly] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
-                ortho_org[o][protein+", "+assembly]['read_start'][startIdx]=ortho_org[o][protein+", "+assembly]['read_start'].get(startIdx,0)+1
-                ortho_org[o][protein+", "+assembly]['read_end'][endIdx]=ortho_org[o][protein+", "+assembly]['read_end'].get(endIdx,0)+1
-                ortho_org[o][protein+", "+assembly]['mod_site'].update(mod_indices)
+                if protein+", "+assembly+", "+species not in ortho_org[o]:
+                    ortho_org[o][protein+", "+assembly+", "+species] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
+                ortho_org[o][protein+", "+assembly+", "+species]['read_start'][startIdx]=ortho_org[o][protein+", "+assembly+", "+species]['read_start'].get(startIdx,0)+1
+                ortho_org[o][protein+", "+assembly+", "+species]['read_end'][endIdx]=ortho_org[o][protein+", "+assembly+", "+species]['read_end'].get(endIdx,0)+1
+                ortho_org[o][protein+", "+assembly+", "+species]['mod_site'].update(mod_indices)
     except Exception as e:
         print(f"Error processing {file}: {e}")
 
@@ -124,7 +121,7 @@ protein_ids = set()
 subsequence_indexes = dict()
 
 if __name__ == "__main__":
-    ctx = multiprocessing.get_context("forkserver")
+    ctx = multiprocessing.get_context("spawn")
 
     with ctx.Pool(processes=multiprocessing.cpu_count()) as pool:
         results = pool.imap_unordered(process_file, modification_files)
