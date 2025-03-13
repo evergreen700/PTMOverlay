@@ -42,7 +42,7 @@ for p in proteomes:
         else:
             covered_kos.add(ko)
             outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"w")
-        line = ">"+pid+", "+assembly+","+GCA_to_species[assembly]
+        line = ">"+pid+", "+assembly+", "+GCA_to_species[assembly]
         outFile.write(line)
         line = inFile.readline()
         while line:
@@ -60,7 +60,7 @@ for p in proteomes:
                 else:
                     covered_kos.add(ko)
                     outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"w")
-                line = ">"+pid+", "+assembly+","+GCA_to_species[assembly]+"\n"
+                line = ">"+pid+", "+assembly+", "+GCA_to_species[assembly]+"\n"
             outFile.write(line)
             line = inFile.readline()
         outFile.close()
