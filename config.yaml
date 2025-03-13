@@ -2,7 +2,9 @@ proteome_dir: proteome #this directory must exist and contain proteomes (.faa) a
 pepXML_dir: mass_spec
 pre_align_fasta_dir: preAlign #this directory does not need to exist
 raw_alignment_dir: rawAlign #this directory does not need to exist
+species_info: index_umb_taxa_gca.tsv
 ptm_types:
+  - AcetylCarbamyl
   - Phospho
   - MonoMethyl
   - DiMethyl
