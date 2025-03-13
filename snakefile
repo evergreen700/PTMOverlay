@@ -3,35 +3,52 @@ import os
 import json
 import glob
 import sys
+import requests
 
 #---------------CONFIG--------------------
 configfile: "config.yaml"
 
-ORTHOLOGS=config["orthologs_to_align"]
-PTM_TYPES=config["ptm_types"]
+#-----------ORTHOLOGS/PATHWAYS------------
+if "orthologs_to_align" in config:
+	RORTHOLOGS = config["orthologs_to_align"]
+else:
+	RORTHOLOGS = []
+if "pathways" in config:
+	for p in config["pathways"]:
+		url="https://rest.kegg.jp/link/ko/"+p
+		kos=requests.get(url).text
+		RORTHOLOGS+=[i.split("\t")[-1][3:] for i in kos.split("\n")[:-1]]
+#----------------PTM TYPES---------------
+PTM_TYPES=config["ptm_types"].keys()
+
+#-----------DIR SETUP------------------
 PROTEOMES=config["proteome_dir"]
 PEPXML_DIR=config["pepXML_dir"]
-PTM_DIR="ptm"
+PTM_DIR=config["ptm_dir"]
 PRE_ALIGN_FASTAS=config["pre_align_fasta_dir"]
 RAW_ALIGNMENTS=config["raw_alignment_dir"]
 MUSCLE='runMUSCLE.py'
 TREE_DIR="tree"
 TREE_ALIGN_DIR="phyloAlign"
 SPECIES_INFO=config["species_info"]
+FINAL_ALIGNMENTS=config["final_alignment_dir"]
 
 #----------HANDLING FOR "ALL" KO'S----------
-if type(ORTHOLOGS)==str and OHRTHOLOGS[:4].upper() == "ALL>":
-  kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
+kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
+ORTHOLOGS = dict()
+for k in kofiles:
+  with open(k,"r") as inFile:
+    for l in inFile:
+      pair = l.split()
+      if len(pair)==2:
+        ORTHOLOGS[pair[1]] = ORTHOLOGS.get(pair[1],0)+1
+if type(RORTHOLOGS)==str and ROHRTHOLOGS[:4].upper() == "ALL>":
   threshold = int(ORTHOLOGS[4:])
-  ORTHOLOGS = dict()
-  for k in kofiles:
-    with open(k,"r") as inFile:
-      for l in inFile:
-        pair = l.split()
-        if len(pair)==2:
-          ORTHOLOGS[pair[1]] = ORTHOLOGS.get(pair[1],0)+1
   ORTHOLOGS = [i for i,j in ORTHOLOGS.items() if j > threshold] 
-if type(ORTHOLOGS)!=list:
+else:
+  ORTHOLOGS = set(ORTHOLOGS).intersection(set(RORTHOLOGS))
+
+if type(ORTHOLOGS)!=list and type(ORTHOLOGS)!=set:
   print("ERROR: bad ortholog selection")
   print("Orthologs should be a list of kegg orthology id's (K#####)")
   print("or a minimum number of proteomes that the ortholog is found in (all>15)")
@@ -45,7 +62,7 @@ wildcard_constraints:
 
 rule preAlignBenchmark:
   input:
-    html=expand(RAW_ALIGNMENTS+'/{ko}__{ptm_type}.html', ko=ORTHOLOGS, ptm_type="_".join(PTM_TYPES)),
+    html=expand(FINAL_ALIGNMENTS+'/{ko}__{ptm_type}.html', ko=ORTHOLOGS, ptm_type="_".join(PTM_TYPES)),
     jsons=expand(PTM_DIR+'/{ko}_{ptm_type}_aligned.json', ko=ORTHOLOGS, ptm_type=PTM_TYPES),
     pdfs=expand(TREE_ALIGN_DIR+'/{ko}__{ptm_types}.pdf', ko=ORTHOLOGS, ptm_types="_".join(PTM_TYPES))
 
@@ -57,7 +74,7 @@ rule alignPTMs:
     ptms=PTM_DIR+'/{ko}_{ptm_type}_aligned.json'
   shell:
     '''
-    python ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
+    python3 ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
     '''
 
 rule fastaAnnotate:
@@ -65,10 +82,10 @@ rule fastaAnnotate:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa',
     ptms=expand(PTM_DIR+'/{{ko}}_{pt}_aligned.json', pt=lambda w: w.ptm_types.split("_"))
   output:
-    html=RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html'
+    html=FINAL_ALIGNMENTS+'/{ko}__{ptm_types}.html'
   shell:
     '''
-    python reFormatFasta.py {input.alignment} {output.html} {input.ptms}
+    python3 reFormatFasta.py {input.alignment} {output.html} {input.ptms}
     '''
 
 rule muscle:
@@ -78,7 +95,7 @@ rule muscle:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa'
   shell:
     '''
-    python {MUSCLE} {input.fasta} {output.alignment}
+    python3 {MUSCLE} {input.fasta} {output.alignment}
     '''
 
 rule extract_ptms:
@@ -89,20 +106,20 @@ rule extract_ptms:
     ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
   shell:
     '''
-    python parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {PTM_DIR} {wildcards.ptm_type}
+    python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {PTM_DIR} {wildcards.ptm_type}
     '''
 
 rule group_orthologs:
   output:
-    fastas=expand(PRE_ALIGN_FASTAS+'/{ko}.faa', ko=ORTHOLOGS)
+    fastas=PRE_ALIGN_FASTAS+'/{ko}.faa'
   shell:
     '''
-    python group_orthologs.py {PROTEOMES} {PRE_ALIGN_FASTAS}
+    python3 group_orthologs.py {PROTEOMES} {wildcards.ko} {PRE_ALIGN_FASTAS}
     '''    
 
 rule generate_tree_fasta:
   input:
-    html = RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html'
+    html = FINAL_ALIGNMENTS+'/{ko}__{ptm_types}.html'
   output:
     fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
     json=TREE_DIR+'/{ko}__{ptm_types}.json'
