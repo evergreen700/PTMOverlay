@@ -15,6 +15,9 @@ PTM_DIR="ptm"
 PRE_ALIGN_FASTAS=config["pre_align_fasta_dir"]
 RAW_ALIGNMENTS=config["raw_alignment_dir"]
 MUSCLE='runMUSCLE.py'
+TREE_DIR="tree"
+TREE_ALIGN_DIR="phyloAlign"
+SPECIES_INFO=config["species_info"]
 
 #----------HANDLING FOR "ALL" KO'S----------
 if type(ORTHOLOGS)==str and OHRTHOLOGS[:4].upper() == "ALL>":
@@ -43,7 +46,8 @@ wildcard_constraints:
 rule preAlignBenchmark:
   input:
     html=expand(RAW_ALIGNMENTS+'/{ko}__{ptm_type}.html', ko=ORTHOLOGS, ptm_type="_".join(PTM_TYPES)),
-    jsons=expand(PTM_DIR+'/{ko}_{ptm_type}_aligned.json', ko=ORTHOLOGS, ptm_type=PTM_TYPES)
+    jsons=expand(PTM_DIR+'/{ko}_{ptm_type}_aligned.json', ko=ORTHOLOGS, ptm_type=PTM_TYPES),
+    pdfs=expand(TREE_ALIGN_DIR+'/{ko}__{ptm_types}.pdf', ko=ORTHOLOGS, ptm_types="_".join(PTM_TYPES))
 
 rule alignPTMs:
   input:
@@ -95,3 +99,37 @@ rule group_orthologs:
     '''
     python group_orthologs.py {PROTEOMES} {PRE_ALIGN_FASTAS}
     '''    
+rule generate_tree_fasta:
+  input:
+    html = RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html'
+  output:
+    fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
+    json=TREE_DIR+'/{ko}__{ptm_types}.json'
+  shell:
+    '''
+    python3 generateTreeFasta.py {input.html} {output.fasta} {output.json}
+    '''
+
+rule generate_tree_file:
+  input:
+    fasta=TREE_DIR+'/{ko}__{ptm_types}.faa'
+  output:
+    nh=TREE_DIR+'/{ko}__{ptm_types}.nh'
+  shell:
+    '''
+    python3 generateTreeNH.py {input.fasta} {output.nh}
+    '''
+
+rule generate_tree:
+  input:
+    html = RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html',
+    fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
+    nh=TREE_DIR+'/{ko}__{ptm_types}.nh',
+    json=TREE_DIR+'/{ko}__{ptm_types}.json',
+    tsv= SPECIES_INFO
+  output:
+    pdf=TREE_ALIGN_DIR+'/{ko}__{ptm_types}.pdf'
+  shell:
+    '''
+    python3 generateTree.py {input.html} {input.fasta} {input.nh} {input.json} {input.tsv} {output.pdf}
+    '''
