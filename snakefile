@@ -99,6 +99,7 @@ rule group_orthologs:
     '''
     python group_orthologs.py {PROTEOMES} {PRE_ALIGN_FASTAS}
     '''    
+
 rule generate_tree_fasta:
   input:
     html = RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html'
