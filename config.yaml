@@ -3,17 +3,19 @@
 proteome_dir: proteome #this directory must exist and contain proteomes (.faa) and kegg annotations (.kegg.txt)
 pepXML_dir: mass_spec
 ptm_types:
-  - Phospho
-  - AcetylCarbamyl
-  - MonoMethyl
-  - DiMethyl
-  - TriMethyl
+  Phospho: 80
+  AcetylCarbamyl: 42
+  MonoMethyl: 14
+  DiMethyl: 28
+  TriMethyl: 42
 
 ### alignment report parameters ###
 
-orthologs_to_align: #can also provide a minimum coverage instead of specific ids (ie, all>31) but this will generate a ton of files and may cause snakemake to crash due to filesystem delays. You have been warned
-   - K00016
-   - K01689
+#orthologs_to_align: #can also provide a minimum coverage instead of specific ids (ie, all>31) but this will generate a ton of files and may cause snakemake to crash due to filesystem delays. You have been warned
+#   - K00016
+#   - K01689
+pathways:
+  - ko00020
 row_length: 100 #the length of each row in the final report
   #select_intervals:
   #  - [0,60]

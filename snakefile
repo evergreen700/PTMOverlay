@@ -3,12 +3,25 @@ import os
 import json
 import glob
 import sys
+import requests
 
 #---------------CONFIG--------------------
 configfile: "config.yaml"
 
-ORTHOLOGS=config["orthologs_to_align"]
-PTM_TYPES=config["ptm_types"]
+#-----------ORTHOLOGS/PATHWAYS------------
+if "orthologs_to_align" in config:
+	RORTHOLOGS = config["orthologs_to_align"]
+else:
+	RORTHOLOGS = []
+if "pathways" in config:
+	for p in config["pathways"]:
+		url="https://rest.kegg.jp/link/ko/"+p
+		kos=requests.get(url).text
+		RORTHOLOGS+=[i.split("\t")[-1][3:] for i in kos.split("\n")[:-1]]
+#----------------PTM TYPES---------------
+PTM_TYPES=config["ptm_types"].keys()
+
+#-----------DIR SETUP------------------
 PROTEOMES=config["proteome_dir"]
 PEPXML_DIR=config["pepXML_dir"]
 PTM_DIR=config["ptm_dir"]
@@ -18,18 +31,21 @@ MUSCLE='runMUSCLE.py'
 FINAL_ALIGNMENTS=config["final_alignment_dir"]
 
 #----------HANDLING FOR "ALL" KO'S----------
-if type(ORTHOLOGS)==str and OHRTHOLOGS[:4].upper() == "ALL>":
-  kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
+kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
+ORTHOLOGS = dict()
+for k in kofiles:
+  with open(k,"r") as inFile:
+    for l in inFile:
+      pair = l.split()
+      if len(pair)==2:
+        ORTHOLOGS[pair[1]] = ORTHOLOGS.get(pair[1],0)+1
+if type(RORTHOLOGS)==str and ROHRTHOLOGS[:4].upper() == "ALL>":
   threshold = int(ORTHOLOGS[4:])
-  ORTHOLOGS = dict()
-  for k in kofiles:
-    with open(k,"r") as inFile:
-      for l in inFile:
-        pair = l.split()
-        if len(pair)==2:
-          ORTHOLOGS[pair[1]] = ORTHOLOGS.get(pair[1],0)+1
   ORTHOLOGS = [i for i,j in ORTHOLOGS.items() if j > threshold] 
-if type(ORTHOLOGS)!=list:
+else:
+  ORTHOLOGS = set(ORTHOLOGS).intersection(set(RORTHOLOGS))
+
+if type(ORTHOLOGS)!=list and type(ORTHOLOGS)!=set:
   print("ERROR: bad ortholog selection")
   print("Orthologs should be a list of kegg orthology id's (K#####)")
   print("or a minimum number of proteomes that the ortholog is found in (all>15)")
@@ -91,8 +107,8 @@ rule extract_ptms:
 
 rule group_orthologs:
   output:
-    fastas=expand(PRE_ALIGN_FASTAS+'/{ko}.faa', ko=ORTHOLOGS)
+    fastas=PRE_ALIGN_FASTAS+'/{ko}.faa'
   shell:
     '''
-    python3 group_orthologs.py {PROTEOMES} {PRE_ALIGN_FASTAS}
+    python3 group_orthologs.py {PROTEOMES} {wildcards.ko} {PRE_ALIGN_FASTAS}
     '''    

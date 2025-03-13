@@ -3,7 +3,8 @@ import glob
 import os
 
 PROTEOME_PATH = sys.argv[1]
-PRE_ALIGN_PATH = sys.argv[2]
+ORTHOLOG = sys.argv[2]
+PRE_ALIGN_PATH = sys.argv[3]
 covered_kos = set()
 proteomes = glob.glob(os.path.join(PROTEOME_PATH,"*.faa"))
 
@@ -16,7 +17,7 @@ for p in proteomes:
     with open(ka,"r") as inFile:
         for l in inFile:
             pair = l.split()
-            if len(pair) == 2:
+            if pair[-1] == ORTHOLOG:
                 orthologs[pair[0]]=pair[1]
     with open(p,"r") as inFile:
         line = inFile.readline()
@@ -25,14 +26,18 @@ for p in proteomes:
             line = inFile.readline()
             while line and line[0] != ">":
                 line = inFile.readline()
+            if not line:
+                break
             pid = line.split(maxsplit=1)[0][1:]
+        if not line:
+            continue
         ko = orthologs[pid]
         if ko in covered_kos:
             outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"a")
         else:
             covered_kos.add(ko)
             outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"w")
-        line = ">"+pid+", "+assembly
+        line = ">"+pid+", "+assembly+"\n"
         outFile.write(line)
         line = inFile.readline()
         while line:
