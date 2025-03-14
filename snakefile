@@ -109,7 +109,7 @@ rule extract_ptms:
     ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
   shell:
     '''
-    {PYTHON} scripts/parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {PTM_DIR} {wildcards.ptm_type}
+    {PYTHON} scripts/parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {SPECIES_INFO} {PTM_DIR} {wildcards.ptm_type}
     '''
 
 rule group_orthologs:
@@ -117,7 +117,7 @@ rule group_orthologs:
     fastas=PRE_ALIGN_FASTAS+'/{ko}.faa'
   shell:
     '''
-    {PYTHON} scripts/group_orthologs.py {PROTEOMES} {wildcards.ko} {PRE_ALIGN_FASTAS}
+    {PYTHON} scripts/group_orthologs.py {PROTEOMES} {wildcards.ko} {SPECIES_INFO} {PRE_ALIGN_FASTAS}
     '''    
 
 rule generate_tree_fasta:

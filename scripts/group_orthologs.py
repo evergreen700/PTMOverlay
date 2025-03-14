@@ -5,14 +5,15 @@ import csv
 
 PROTEOME_PATH = sys.argv[1]
 ORTHOLOG = sys.argv[2]
-PRE_ALIGN_PATH = sys.argv[3]
+SPECIES_INFO = sys.argv[3]
+PRE_ALIGN_PATH = sys.argv[4]
 covered_kos = set()
 proteomes = glob.glob(os.path.join(PROTEOME_PATH,"*.faa"))
 
 os.makedirs(PRE_ALIGN_PATH, exist_ok=True)
 
 GCA_to_species = {}
-with open("index_umb_taxa_gca.tsv", mode="r", newline="") as file:
+with open(SPECIES_INFO, mode="r", newline="") as file:
     reader = csv.reader(file, delimiter="\t")
     headers = next(reader)
     for row in reader:

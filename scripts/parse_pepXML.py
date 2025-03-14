@@ -18,8 +18,8 @@ genebank_dir = sys.argv[2]
 genebank_files = glob.glob(os.path.join(genebank_dir, "**", "*.faa"), recursive=True)
 
 ptm_info = sys.argv[3]
-
-outdir = sys.argv[4]
+species_info = sys.argv[4]
+outdir = sys.argv[5]
 os.makedirs(outdir, exist_ok=True)
 
 with open(ptm_info, "r") as inFile:
@@ -28,9 +28,9 @@ with open(ptm_info, "r") as inFile:
 with open("config.yaml") as inFile:
     ptm_mass = yaml.load(inFile, Loader=yaml.CLoader)["ptm_types"]
 
-if len(sys.argv) > 5:
-    outsuffix = "_"+sys.argv[5]
-    shift_size=ptm_mass[sys.argv[5]]
+if len(sys.argv) > 6:
+    outsuffix = "_"+sys.argv[6]
+    shift_size=ptm_mass[sys.argv[6]]
 else:
     outsuffix = ""
     shift_size = 0
@@ -40,7 +40,7 @@ aa_mass = aa_mass["base"]
 
 UMB_to_GCA = {}
 # read data from tsv config into dictionary of umb: tuple(species, assembly)
-with open("index_umb_taxa_gca.tsv", mode="r", newline="") as file:
+with open(species_info, mode="r", newline="") as file:
     reader = csv.reader(file, delimiter="\t")
     headers = next(reader)
     for row in reader:
