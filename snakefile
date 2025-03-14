@@ -7,6 +7,7 @@ import requests
 
 #---------------CONFIG--------------------
 configfile: "config.yaml"
+PYTHON = config["python"]
 
 #-----------ORTHOLOGS/PATHWAYS------------
 if "orthologs_to_align" in config:
@@ -76,7 +77,7 @@ rule alignPTMs:
     ptms=PTM_DIR+'/{ko}_{ptm_type}_aligned.json'
   shell:
     '''
-    python3 ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
+    {PYTHON} scripts/ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
     '''
 
 rule fastaAnnotate:
@@ -87,7 +88,7 @@ rule fastaAnnotate:
     html=FINAL_ALIGNMENTS+'/{ko}__{ptm_types}.html'
   shell:
     '''
-    python3 reFormatFasta.py {input.alignment} {output.html} {input.ptms}
+    {PYTHON} scripts/reFormatFasta.py {input.alignment} {output.html} {input.ptms}
     '''
 
 rule muscle:
@@ -97,18 +98,18 @@ rule muscle:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa'
   shell:
     '''
-    python3 {MUSCLE} {input.fasta} {output.alignment}
+    {PYTHON} scripts/runMUSCLE.py {input.fasta} {output.alignment}
     '''
 
 rule extract_ptms:
   input:
     pepXML_dir=PEPXML_DIR+'/{ptm_type}',
-    mass='ptm_mass.yaml'
+    mass='scripts/ptm_mass.yaml'
   output:
     ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
   shell:
     '''
-    python3 parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {PTM_DIR} {wildcards.ptm_type}
+    {PYTHON} scripts/parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {PTM_DIR} {wildcards.ptm_type}
     '''
 
 rule group_orthologs:
@@ -116,7 +117,7 @@ rule group_orthologs:
     fastas=PRE_ALIGN_FASTAS+'/{ko}.faa'
   shell:
     '''
-    python3 group_orthologs.py {PROTEOMES} {wildcards.ko} {PRE_ALIGN_FASTAS}
+    {PYTHON} scripts/group_orthologs.py {PROTEOMES} {wildcards.ko} {PRE_ALIGN_FASTAS}
     '''    
 
 rule generate_tree_fasta:
@@ -127,7 +128,7 @@ rule generate_tree_fasta:
     json=TREE_DIR+'/{ko}__{ptm_types}.json'
   shell:
     '''
-    python3 generateTreeFasta.py {input.html} {output.fasta} {output.json}
+    {PYTHON} scripts/generateTreeFasta.py {input.html} {output.fasta} {output.json}
     '''
 
 rule generate_tree_file:
@@ -137,7 +138,7 @@ rule generate_tree_file:
     nh=TREE_DIR+'/{ko}__{ptm_types}.nh'
   shell:
     '''
-    python3 generateTreeNH.py {input.fasta} {output.nh}
+    {PYTHON} scripts/generateTreeNH.py {input.fasta} {output.nh}
     '''
 
 rule generate_tree:
@@ -151,5 +152,5 @@ rule generate_tree:
     pdf=TREE_ALIGN_DIR+'/{ko}__{ptm_types}.tree.pdf'
   shell:
     '''
-    python3 generateTree.py {input.html} {input.fasta} {input.nh} {input.json} {input.tsv} {output.pdf}
+    {PYTHON} scripts/generateTree.py {input.html} {input.fasta} {input.nh} {input.json} {input.tsv} {output.pdf}
     '''

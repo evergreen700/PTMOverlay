@@ -1,3 +1,6 @@
+### python command (usually python3 or python)
+python: python3
+
 ### input directories ###
 
 proteome_dir: proteome #this directory must exist and contain proteomes (.faa) and kegg annotations (.kegg.txt)
