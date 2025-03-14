@@ -46,7 +46,10 @@ if type(RORTHOLOGS)==str and ROHRTHOLOGS[:4].upper() == "ALL>":
   threshold = int(ORTHOLOGS[4:])
   ORTHOLOGS = [i for i,j in ORTHOLOGS.items() if j > threshold] 
 else:
-  ORTHOLOGS = set(ORTHOLOGS).intersection(set(RORTHOLOGS))
+  ORTHOLOGS = {i for i,j in ORTHOLOGS.items() if j > 2}
+  for i in set(RORTHOLOGS) - ORTHOLOGS:
+    print(i,"will not be aligned due to an insufficent number of sequences (n < 2)")
+  ORTHOLOGS = ORTHOLOGS.intersection(set(RORTHOLOGS))
 
 if type(ORTHOLOGS)!=list and type(ORTHOLOGS)!=set:
   print("ERROR: bad ortholog selection")
@@ -140,7 +143,7 @@ rule generate_tree_file:
 
 rule generate_tree:
   input:
-    html = RAW_ALIGNMENTS+'/{ko}__{ptm_types}.html',
+    html = FINAL_ALIGNMENTS+'/{ko}__{ptm_types}.html',
     fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
     nh=TREE_DIR+'/{ko}__{ptm_types}.nh',
     json=TREE_DIR+'/{ko}__{ptm_types}.json',
