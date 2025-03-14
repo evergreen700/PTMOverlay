@@ -23,7 +23,10 @@ outdir = sys.argv[4]
 os.makedirs(outdir, exist_ok=True)
 
 with open(ptm_info, "r") as inFile:
-    ptm_mass = yaml.load(inFile, Loader=yaml.CLoader)
+    aa_mass = yaml.load(inFile, Loader=yaml.CLoader)
+
+with open("config.yaml") as inFile:
+    ptm_mass = yaml.load(inFile, Loader=yaml.CLoader)["ptm_types"]
 
 if len(sys.argv) > 5:
     outsuffix = "_"+sys.argv[5]
@@ -32,7 +35,7 @@ else:
     outsuffix = ""
     shift_size = 0
 
-aa_mass = ptm_mass["base"]
+aa_mass = aa_mass["base"]
 
 
 UMB_to_GCA = {}
@@ -82,14 +85,16 @@ def process_file(file):
     species, assembly = UMB_to_GCA.get(UMB, 'NA')
     ka = os.path.join(genebank_dir, assembly+".kegg.txt")
     orthologs = dict()
+    ortho_org = dict()
     with open(ka,"r") as inFile:
         for l in inFile:
             pair = l.split()
             if len(pair) == 2:
                 orthologs[pair[0]]=pair[1]
-
-    ortho_org = dict()
-
+                if pair[1] not in ortho_org:
+                    ortho_org[pair[1]]={pair[0]+", "+assembly+", "+species: {'read_start':dict(),'read_end':dict(),'mod_site':set()}}
+                else:
+                    ortho_org[pair[1]][pair[0]+", "+assembly+", "+species] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
     try:
         for entry in pepxml.read(file):
             search_hit = entry.get('search_hit', [{}])[0]
@@ -105,10 +110,6 @@ def process_file(file):
                 peptide = search_hit.get('peptide', "")
                 startIdx, endIdx, mod_indices = search_peptide(peptide, protein, UMB_string, modifications)
                 o = orthologs[protein]
-                if o not in ortho_org:
-                    ortho_org[o] = dict()
-                if protein+", "+assembly+", "+species not in ortho_org[o]:
-                    ortho_org[o][protein+", "+assembly+", "+species] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
                 ortho_org[o][protein+", "+assembly+", "+species]['read_start'][startIdx]=ortho_org[o][protein+", "+assembly+", "+species]['read_start'].get(startIdx,0)+1
                 ortho_org[o][protein+", "+assembly+", "+species]['read_end'][endIdx]=ortho_org[o][protein+", "+assembly+", "+species]['read_end'].get(endIdx,0)+1
                 ortho_org[o][protein+", "+assembly+", "+species]['mod_site'].update(mod_indices)
