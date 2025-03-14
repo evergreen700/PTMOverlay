@@ -1,14 +1,26 @@
-### python command (usually python3 or python)
+
+# python command (usually python3 or python)
 python: python3
+
 
 ### input directories ###
 
+# these directories/filepaths must contain info as described in the README
 proteome_dir: proteome #this directory must exist and contain proteomes (.faa) and kegg annotations (.kegg.txt)
 pepXML_dir: mass_spec #this directory must exist and have one subdirectory for each ptm type
-final_alignment_dir: align_reports #this directory does not need to exist
-tree_final_alignments: align_reports #this directory does not need to exit
+species_info: index_umb_taxa_gca.tsv #this must exist
 
-species_info: index_umb_taxa_gca.tsv
+
+### output directories ###
+
+# these directories will be created if they do not exist
+final_alignment_dir: align_reports
+tree_final_alignments: align_reports
+
+
+### PTM types ###
+
+# must contain the name and mass shift for each type.
 ptm_types:
   Phospho: 80
   AcetylCarbamyl: 42
@@ -16,20 +28,24 @@ ptm_types:
   DiMethyl: 28
   TriMethyl: 42
 
+
 ### alignment report parameters ###
 
-#orthologs_to_align: #can also provide a minimum coverage instead of specific ids (ie, all>31) but this will generate a ton of files and may cause snakemake to crash due to filesystem delays. You have been warned
-#   - K00016
-#   - K01689
-pathways:
-  - ko00020
+orthologs_to_align: #can also provide a minimum coverage instead of specific ids (ie, all>31) but this will generate a ton of files and may cause snakemake to crash due to filesystem delays. You have been warned
+   - K00016
+   - K01689
+#pathways:
+#  - ko00020
 row_length: 100 #the length of each row in the final report
-  #select_intervals:
-  #  - [0,60]
-  #  - [200,225]
+#select_intervals:
+#  - [0,60]
+#  - [200,225]
+
 
 ### intermediate directories ###
-ptm_dir: intermediates/ptm #this directory does not need to exist
-pre_align_fasta_dir: intermediates/preAlign #this directory does not need to exist
-raw_alignment_dir: intermediates/rawAlign #this directory does not need to exist
-tree_intermediates: intermediates/tree #this directory does not need to exist
+
+# these directories will be created if they do not exist
+ptm_dir: intermediates/ptm
+pre_align_fasta_dir: intermediates/preAlign
+raw_alignment_dir: intermediates/rawAlign #cannot be the same dir as pre_align_fasta_dir
+tree_intermediates: intermediates/tree
