@@ -20,11 +20,23 @@ PTM
 | | + BioD_urine_UMB0005_01_12Apr24_Arwen_WBEH-23-02-03.pepXML
 | | + ... (other phospho pepXMLs)
 | + ... (other PTM types)
++ index_umb_taxa_gca.tsv
 + README.md
 + snakefile
 + ...
 ```
 Then run by running snakemake from the root directory:
+```
+snakemake
+```
+`index_umb_taxa_gca.tsv` is a tab-separated file that isused to match between mass spec strain IDs (UMB####), species name, and proteome assembly (GCA). If you are using your own mass spec and proteome files, make sure that the names are in this tsv.
+
+## Example run
+The proteome and kegg annotation files are included as an example. To install the corresponding mass spec data, run:
+```
+python3 scripts/download_example_data.py
+```
+Once the mass spec data is installed, you should have a `mass_spec` directory with 5 subdirectories. Try the tool out by running snakemake:
 ```
 snakemake
 ```
