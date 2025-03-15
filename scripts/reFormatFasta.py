@@ -10,7 +10,7 @@ outFile = sys.argv[2]
 inPTM = sys.argv[3:]
 
 #these are the colors assigned to the PTMs in the order they are presented in.
-colors=["#fc1c03","#0324fc","#03fc0f","#fc03e7","#b59a4a"]
+colors=["#fc1c03","#0324fc","#a903fc","#03fc0f","#fc03e7","#b59a4a"]
 
 os.makedirs(os.path.dirname(outFile), exist_ok=True)
 
@@ -144,8 +144,9 @@ with open(outFile, "w") as writer:
                     writePos += 1
                 idx+=1
             writer.write('</pre></td></tr>')
-            if i == len(sequences)-1:
-                iters=idx
+        iters=idx
+        if iters < len(sequences[0]):
+            writer.write('''<tr class="spacer"></tr>''')
 
     writer.write(''' </table><form>
                     <table>''')

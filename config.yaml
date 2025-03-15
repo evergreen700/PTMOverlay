@@ -23,7 +23,8 @@ tree_final_alignments: align_reports
 # must contain the name and mass shift for each type.
 ptm_types:
   Phospho: 80
-  AcetylCarbamyl: 42
+  Acetyl: 42
+  Carbamyl: 43
   MonoMethyl: 14
   DiMethyl: 28
   TriMethyl: 42

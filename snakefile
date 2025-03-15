@@ -57,6 +57,27 @@ if type(ORTHOLOGS)!=list and type(ORTHOLOGS)!=set:
   print("Orthologs should be a list of kegg orthology id's (K#####)")
   print("or a minimum number of proteomes that the ortholog is found in (all>15)")
   sys.exit()
+
+#-------LOOKUP KEGG SYMBOLS AND NAMES-------
+ORTHOLOGS = list(ORTHOLOGS)
+SYMBOLS = []
+NAMES = []
+for i in ORTHOLOGS:
+  url="https://rest.kegg.jp/get/"+i
+  koInfo=requests.get(url).text
+  koInfo = koInfo.split("\n")
+  symbol = koInfo[1][12:]
+  name = koInfo[2][12:]
+  symbol = symbol.split(", ")[0].strip()
+  symbol = re.sub("\.","_",symbol)
+  name = re.sub("\[.*]","",name)
+  name = re.sub("\(.*\) ", "", name)
+  name = re.sub("[\(\),]","", name)
+  name = re.sub(" /.*$","", name).strip()
+  name = re.sub("[/ :]","_", name)
+  SYMBOLS.append(symbol)
+  NAMES.append(name)
+
 #------------------RULES--------------------
 
 wildcard_constraints:
@@ -66,8 +87,8 @@ wildcard_constraints:
 
 rule preAlignBenchmark:
   input:
-    html=expand(FINAL_ALIGNMENTS+'/{ko}__{ptm_type}.html', ko=ORTHOLOGS, ptm_type="_".join(PTM_TYPES)),
-    pdfs=expand(TREE_ALIGN_DIR+'/{ko}__{ptm_types}.tree.pdf', ko=ORTHOLOGS, ptm_types="_".join(PTM_TYPES))
+    html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
+    #pdfs=expand(TREE_ALIGN_DIR+'/{ko}__{ptm_types}.tree.pdf', ko=ORTHOLOGS, ptm_types="_".join(PTM_TYPES))
 
 rule alignPTMs:
   input:
@@ -85,7 +106,7 @@ rule fastaAnnotate:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa',
     ptms=expand(PTM_DIR+'/{{ko}}_{pt}_aligned.json', pt=lambda w: w.ptm_types.split("_"))
   output:
-    html=FINAL_ALIGNMENTS+'/{ko}__{ptm_types}.html'
+    html=FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{symbol}__{name}.html'
   shell:
     '''
     {PYTHON} scripts/reFormatFasta.py {input.alignment} {output.html} {input.ptms}
