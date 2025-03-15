@@ -6,8 +6,9 @@ import yaml
 
 inFile = sys.argv[1]
 outFile = sys.argv[2]
+TITLE = sys.argv[3]
 #window = int(sys.argv[3])
-inPTM = sys.argv[3:]
+inPTM = sys.argv[4:]
 
 #these are the colors assigned to the PTMs in the order they are presented in.
 colors=["#fc1c03","#0324fc","#a903fc","#03fc0f","#fc03e7","#b59a4a"]
@@ -100,7 +101,7 @@ with open(outFile, "w") as writer:
         </head><body>
                 <h1 class="title">
     ''')
-    writer.write(os.path.basename(outFile))
+    writer.write(TITLE)
     writer.write('</h1><table>\n')
     for i in range(len(sequences)):
         seq = seqIDs[i]

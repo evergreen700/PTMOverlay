@@ -17,9 +17,9 @@ outfile = sys.argv[6]
 
 alignment = AlignIO.read(fasta_infile, "fasta")
 
-filename = os.path.splitext(os.path.basename(infile))[0]
+filename = os.path.basename(os.path.dirname(infile))
 split_title = filename.split("_")
-ptm_types = split_title[1:]
+ptm_types = split_title
 
 with open(json_infile, "r") as json_file:
     data = json.load(json_file)
@@ -61,7 +61,7 @@ colors = [
     "sienna", "steelblue", "tomato", "wheat", "khaki", "lightgreen", "darkblue", "darkred", "darkcyan",
     "darkmagenta", "darkorchid", "firebrick", "forestgreen", "dodgerblue", "goldenrod"
 ]
-mod_colors = {label: colors[i % len(colors)] for i, label in enumerate(ptm_types[1:])}
+mod_colors = {label: colors[i % len(colors)] for i, label in enumerate(ptm_types)}
 default_color = "black"
 
 # Convert ordered alignment to a sequence matrix

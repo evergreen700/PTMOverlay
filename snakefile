@@ -62,12 +62,14 @@ if type(ORTHOLOGS)!=list and type(ORTHOLOGS)!=set:
 ORTHOLOGS = list(ORTHOLOGS)
 SYMBOLS = []
 NAMES = []
+FULLNAMES = dict()
 for i in ORTHOLOGS:
   url="https://rest.kegg.jp/get/"+i
   koInfo=requests.get(url).text
   koInfo = koInfo.split("\n")
   symbol = koInfo[1][12:]
   name = koInfo[2][12:]
+  FULLNAMES[i] = name
   symbol = symbol.split(", ")[0].strip()
   symbol = re.sub("\.","_",symbol)
   name = re.sub("\[.*]","",name)
@@ -88,7 +90,7 @@ wildcard_constraints:
 rule preAlignBenchmark:
   input:
     html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
-    #pdfs=expand(TREE_ALIGN_DIR+'/{ko}__{ptm_types}.tree.pdf', ko=ORTHOLOGS, ptm_types="_".join(PTM_TYPES))
+    pdfs=expand(TREE_ALIGN_DIR+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES)
 
 rule alignPTMs:
   input:
@@ -107,9 +109,11 @@ rule fastaAnnotate:
     ptms=expand(PTM_DIR+'/{{ko}}_{pt}_aligned.json', pt=lambda w: w.ptm_types.split("_"))
   output:
     html=FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{symbol}__{name}.html'
+  params:
+    title=lambda w: FULLNAMES[w.ko]
   shell:
     '''
-    {PYTHON} scripts/reFormatFasta.py {input.alignment} {output.html} {input.ptms}
+    {PYTHON} scripts/reFormatFasta.py {input.alignment} {output.html} '{params.title}' {input.ptms}
     '''
 
 rule muscle:
@@ -143,7 +147,7 @@ rule group_orthologs:
 
 rule generate_tree_fasta:
   input:
-    html = FINAL_ALIGNMENTS+'/{ko}__{ptm_types}.html'
+    html = FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__*.html'
   output:
     fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
     json=TREE_DIR+'/{ko}__{ptm_types}.json'
@@ -164,13 +168,13 @@ rule generate_tree_file:
 
 rule generate_tree:
   input:
-    html = FINAL_ALIGNMENTS+'/{ko}__{ptm_types}.html',
+    html = FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{symbol}__{name}.html',
     fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
     nh=TREE_DIR+'/{ko}__{ptm_types}.nh',
     json=TREE_DIR+'/{ko}__{ptm_types}.json',
     tsv= SPECIES_INFO
   output:
-    pdf=TREE_ALIGN_DIR+'/{ko}__{ptm_types}.tree.pdf'
+    pdf=TREE_ALIGN_DIR+'/{ptm_types}/{ko}__{symbol}__{name}.tree.pdf'
   shell:
     '''
     {PYTHON} scripts/generateTree.py {input.html} {input.fasta} {input.nh} {input.json} {input.tsv} {output.pdf}
