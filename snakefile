@@ -149,7 +149,7 @@ rule group_orthologs:
 
 rule generate_tree_fasta:
   input:
-    html = FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{params.symbol}__{params.name}.html'
+    html = FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{SN_MATCHUPS[w.ko][0]}__{SN_MATCHUPS[w.ko][1]}.html'
   output:
     fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
     json=TREE_DIR+'/{ko}__{ptm_types}.json'
@@ -184,3 +184,28 @@ rule generate_tree:
     '''
     {PYTHON} scripts/generateTree.py {input.html} {input.fasta} {input.nh} {input.json} {input.tsv} {output.pdf}
     '''
+
+rule download_example_data:
+  output:
+    zip=ancient("mass_spec.zip")
+  shell:
+    '''
+    {PYTHON} scripts/download_example_data.py
+    '''
+
+rule extract_example_data:
+  output:
+    Phospho=directory("mass_spec/Phospho"),
+    Acetyl=directory("mass_spec/Acetyl"),
+    Carbamyl=directory("mass_spec/Carbamyl"),
+    MonoMethyl=directory("mass_spec/MonoMethyl"),
+    DiMethyl=directory("mass_spec/DiMethyl"),
+    TriMethyl=directory("mass_spec/TriMethyl")
+  input:
+    zip=ancient("mass_spec.zip")
+  shell:
+    '''
+    {PYTHON} scripts/download_example_data.py
+    '''
+
+  
