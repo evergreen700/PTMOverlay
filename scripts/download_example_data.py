@@ -16,4 +16,7 @@ dirs = glob.glob(os.path.join("mass_spec","*"))
 
 for d in dirs:
     bn = os.path.basename(d)
-    os.rename(d,os.path.join("mass_spec",bn.replace("_","")))
+    ptms = bn.split("_")
+    if len(ptms) > 1:
+        for p in ptms:
+            os.symlink(d,os.path.join("mass_spec",p))
