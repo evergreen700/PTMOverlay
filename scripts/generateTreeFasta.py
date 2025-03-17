@@ -44,9 +44,9 @@ for row in table_rows:
     species_set.add(species_id)
 species_count = len(species_set)
 
-filename = os.path.splitext(os.path.basename(infile))[0]
+filename = os.path.basename(os.path.dirname(infile))
 split_title = filename.split("_")
-ptm_types = split_title[1:]
+ptm_types = split_title
 
 for row in table_rows[:species_count]:
     cols = row.find_all("td")
