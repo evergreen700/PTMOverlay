@@ -55,7 +55,7 @@ ordered_modifications = {species: modifications[species] for species in leaf_ord
 
 # ---- Multiple Sequence Alignment Visualization ---- #
 colors = [
-    "red", "blue", "green", "magenta", "orange", "yellow", "purple", "pink", "lime", "teal",
+    "red", "blue", "purple", "green", "magenta", "orange", "pink", "lime", "teal",
     "cyan", "gold", "brown", "gray", "navy", "olive", "maroon", "turquoise", "indigo", "violet",
     "chartreuse", "salmon", "coral", "skyblue", "lavender", "peru", "orchid", "plum", "seagreen",
     "sienna", "steelblue", "tomato", "wheat", "khaki", "lightgreen", "darkblue", "darkred", "darkcyan",
