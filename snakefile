@@ -149,7 +149,7 @@ rule group_orthologs:
 
 rule generate_tree_fasta:
   input:
-    html = FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{SN_MATCHUPS[w.ko][0]}__{SN_MATCHUPS[w.ko][1]}.html'
+    html = expand(FINAL_ALIGNMENTS+'/{{ptm_types}}/{{ko}}__{symbol}__{name}.html', symbol=lambda w: SN_MATCHUPS[w.ko][0], name=lambda w: SN_MATCHUPS[w.ko][1])
   output:
     fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
     json=TREE_DIR+'/{ko}__{ptm_types}.json'
