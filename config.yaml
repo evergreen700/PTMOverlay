@@ -33,10 +33,16 @@ ptm_types:
 ### alignment report parameters ###
 
 orthologs_to_align: #can also provide a minimum coverage instead of specific ids (ie, all>31) but this will generate a ton of files and may cause snakemake to crash due to filesystem delays. You have been warned
-   - K00016
-   - K01689
-#pathways:
-#  - ko00020
+   - K01647
+   - K27802
+   - K00031
+   - K00164
+   - K01902
+   - K00239
+   - K01676
+   - K00116
+     #pathways:
+     #  - ko00020
 row_length: 100 #the length of each row in the final report
 #select_intervals:
 #  - [0,60]
