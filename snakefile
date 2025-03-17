@@ -63,6 +63,7 @@ ORTHOLOGS = list(ORTHOLOGS)
 SYMBOLS = []
 NAMES = []
 FULLNAMES = dict()
+SN_MATCHUPS = dict()
 for i in ORTHOLOGS:
   url="https://rest.kegg.jp/get/"+i
   koInfo=requests.get(url).text
@@ -79,6 +80,7 @@ for i in ORTHOLOGS:
   name = re.sub("[/ :]","_", name)
   SYMBOLS.append(symbol)
   NAMES.append(name)
+  SN_MATCHUPS[i] = (symbol, name)
 
 #------------------RULES--------------------
 
@@ -147,10 +149,13 @@ rule group_orthologs:
 
 rule generate_tree_fasta:
   input:
-    html = FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__*.html'
+    html = FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{params.symbol}__{params.name}.html'
   output:
     fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
     json=TREE_DIR+'/{ko}__{ptm_types}.json'
+  params:
+    name=lambda w: SN_MATCHUPS[w.ko][1],
+    symbol=lambda w: SN_MATCHUPS[w.ko][0]
   shell:
     '''
     {PYTHON} scripts/generateTreeFasta.py {input.html} {output.fasta} {output.json}
