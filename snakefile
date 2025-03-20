@@ -37,19 +37,19 @@ FINAL_ALIGNMENTS=config["final_alignment_dir"]
 #----------HANDLING FOR "ALL" KO'S----------
 kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
 ORTHOLOGS = dict()
+CUTOFF = config["cutoff"]
 for k in kofiles:
   with open(k,"r") as inFile:
     for l in inFile:
       pair = l.split()
       if len(pair)==2:
         ORTHOLOGS[pair[1]] = ORTHOLOGS.get(pair[1],0)+1
-if type(RORTHOLOGS)==str and ROHRTHOLOGS[:4].upper() == "ALL>":
-  threshold = int(ORTHOLOGS[4:])
-  ORTHOLOGS = [i for i,j in ORTHOLOGS.items() if j > threshold] 
+if RORTHOLOGS=="ALL":
+  ORTHOLOGS = [i for i,j in ORTHOLOGS.items() if j > CUTOFF] 
 else:
-  ORTHOLOGS = {i for i,j in ORTHOLOGS.items() if j > 1}
+  ORTHOLOGS = {i for i,j in ORTHOLOGS.items() if j > CUTOFF}
   for i in set(RORTHOLOGS) - ORTHOLOGS:
-    print(i,"will not be aligned due to an insufficent number of sequences (n < 2)")
+    print(i,"will not be aligned due to an insufficent number of sequences (n < "+str(CUTOFF)+")")
   ORTHOLOGS = ORTHOLOGS.intersection(set(RORTHOLOGS))
 
 if type(ORTHOLOGS)!=list and type(ORTHOLOGS)!=set:
@@ -92,7 +92,22 @@ wildcard_constraints:
 rule preAlignBenchmark:
   input:
     html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
-    pdfs=expand(TREE_ALIGN_DIR+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES)
+    pdfs=expand(TREE_ALIGN_DIR+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
+    csv=PTM_DIR+'/raw_ptms.csv'
+
+rule makeBigCSV:
+  input:
+    ptm=expand(PTM_DIR+'/{k}_{p}_aligned.json',k=ORTHOLOGS,p=PTM_TYPES),
+    faa=expand(RAW_ALIGNMENTS+'/{k}.faa',k=ORTHOLOGS)
+  output:
+    csv=PTM_DIR+'/raw_ptms.csv'
+  params:
+    ptm=" ".join(PTM_TYPES),
+    ko=" ".join(ORTHOLOGS)
+  shell:
+    '''
+    {PYTHON} scripts/make_ptm_csv.py {PTM_DIR} {RAW_ALIGNMENTS} '{params.ptm}' '{params.ko}' {output.csv}
+    '''
 
 rule alignPTMs:
   input:
