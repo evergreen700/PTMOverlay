@@ -32,6 +32,8 @@ ptm_types:
 
 ### alignment report parameters ###
 
+batch_name: Glycolysis
+
     #orthologs_to_align: #can also provide a minimum coverage instead of specific ids (ie, all>31) but this will generate a ton of files and may cause snakemake to crash due to filesystem delays. You have been warned
     #   - K01647
     #   - K27802

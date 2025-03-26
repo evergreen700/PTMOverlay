@@ -49,4 +49,4 @@ for k in kids:
     mods.rename(columns=lambda x: conSeq[x]+str(x+1), inplace=True)
     kidFrames[namesDict[k]] = mods
 bigTable = pd.concat(kidFrames, axis=1, names=["Protein", "Site"])
-bigTable.to_csv(outFile)
+bigTable.to_csv(outFile, na_rep="-")

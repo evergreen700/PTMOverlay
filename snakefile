@@ -33,6 +33,10 @@ TREE_DIR=config["tree_intermediates"]
 TREE_ALIGN_DIR=config["tree_final_alignments"]
 SPECIES_INFO=config["species_info"]
 FINAL_ALIGNMENTS=config["final_alignment_dir"]
+if "batch_name" in config:
+  BATCH_PREFIX = config["batch_name"]+"_"
+else:
+  BATCH_PREFIX = ""
 
 #----------HANDLING FOR "ALL" KO'S----------
 kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
@@ -93,14 +97,24 @@ rule preAlignBenchmark:
   input:
     html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     pdfs=expand(TREE_ALIGN_DIR+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
-    csv=PTM_DIR+'/raw_ptms.csv'
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv'
+
+rule filterCSV:
+  input:
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'unfiltered_ptms.csv'
+  output:
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv'
+  shell:
+    '''
+    {PYTHON} scripts/filter_ptm_table.py {input.csv} {output.csv}
+    '''
 
 rule makeBigCSV:
   input:
     ptm=expand(PTM_DIR+'/{k}_{p}_aligned.json',k=ORTHOLOGS,p=PTM_TYPES),
     faa=expand(RAW_ALIGNMENTS+'/{k}.faa',k=ORTHOLOGS)
   output:
-    csv=PTM_DIR+'/raw_ptms.csv'
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'unfiltered_ptms.csv'
   params:
     ptm="@@".join(PTM_TYPES),
     ko="@@".join(ORTHOLOGS),
