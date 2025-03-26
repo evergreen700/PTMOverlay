@@ -102,11 +102,12 @@ rule makeBigCSV:
   output:
     csv=PTM_DIR+'/raw_ptms.csv'
   params:
-    ptm=" ".join(PTM_TYPES),
-    ko=" ".join(ORTHOLOGS)
+    ptm="@@".join(PTM_TYPES),
+    ko="@@".join(ORTHOLOGS),
+    kn="@@".join(NAMES)
   shell:
     '''
-    {PYTHON} scripts/make_ptm_csv.py {PTM_DIR} {RAW_ALIGNMENTS} '{params.ptm}' '{params.ko}' {output.csv}
+    {PYTHON} scripts/ptm_table.py {RAW_ALIGNMENTS} {PTM_DIR} '{params.ptm}' '{params.ko}' '{params.kn}' {output.csv}
     '''
 
 rule alignPTMs:
