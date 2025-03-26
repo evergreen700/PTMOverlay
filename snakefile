@@ -145,7 +145,7 @@ rule muscle:
 
 rule extract_ptms:
   input:
-    pepXML_dir=PEPXML_DIR+'/{ptm_type}',
+    pepXML_dir=ancient(PEPXML_DIR+'/{ptm_type}'),
     mass='scripts/ptm_mass.yaml'
   output:
     ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
@@ -202,7 +202,7 @@ rule generate_tree:
 
 rule download_example_data:
   output:
-    zip=ancient("mass_spec.zip")
+    zip="mass_spec.zip"
   shell:
     '''
     {PYTHON} scripts/download_example_data.py
@@ -220,7 +220,7 @@ rule extract_example_data:
     zip=ancient("mass_spec.zip")
   shell:
     '''
-    {PYTHON} scripts/download_example_data.py
+    {PYTHON} scripts/extract_example_data.py
     '''
 
   

@@ -13,4 +13,4 @@ for d in dirs:
     ptms = bn.split("_")
     if len(ptms) > 1:
         for p in ptms:
-            os.symlink(d,os.path.join("mass_spec",p))
+            os.symlink(os.path.join(".",bn),os.path.join("mass_spec",p), target_is_directory=True)
