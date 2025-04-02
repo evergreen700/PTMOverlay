@@ -1,4 +1,4 @@
-# PTM
+# PTMOverlay
 Capstone PTM alignment
 
 ## Dependencies
