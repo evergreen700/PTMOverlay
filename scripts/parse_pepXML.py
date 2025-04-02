@@ -1,4 +1,5 @@
 from pyteomics import pepxml
+import platform
 import glob
 import os
 import multiprocessing
@@ -21,6 +22,8 @@ ptm_info = sys.argv[3]
 species_info = sys.argv[4]
 outdir = sys.argv[5]
 os.makedirs(outdir, exist_ok=True)
+
+system = platform.system()
 
 with open(ptm_info, "r") as inFile:
     aa_mass = yaml.load(inFile, Loader=yaml.CLoader)
@@ -122,7 +125,8 @@ protein_ids = set()
 subsequence_indexes = dict()
 
 if __name__ == "__main__":
-    ctx = multiprocessing.get_context("spawn")
+    context = "spawn" if system == "Windows" else "forkserver"
+    ctx = multiprocessing.get_context(context)
 
     with ctx.Pool(processes=multiprocessing.cpu_count()) as pool:
         results = pool.imap_unordered(process_file, modification_files)
