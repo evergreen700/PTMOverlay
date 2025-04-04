@@ -98,7 +98,7 @@ rule preAlignBenchmark:
   input:
     html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     pdfs=expand(TREE_ALIGN_DIR+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
-    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv'.
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
     taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
 
 rule filterCSV:
@@ -310,12 +310,14 @@ rule generate_taxon_tree:
 rule figures:
   input:
     pdf=TREE_ALIGN_DIR+'/Phospho_Acetyl_MonoMethyl_DiMethyl_TriMethyl/K01689__ENO1_2_3__enolase_1_2_3.tree.pdf',
-    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv'
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
+    tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
   output:
     pdf='figures/figure2_Enolase.pdf',
-    csv='figures/figure4_Glycolysis.csv'
+    csv='figures/figure4_Glycolysis_ptms.csv',
+    tree='figures/figure4_Glycolysis_tree.pdf'
   shell:
     '''
-    {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {output.pdf} {output.csv}
+    {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {input.tree} {output.pdf} {output.csv} {output.tree}
     '''
 
