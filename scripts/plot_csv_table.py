@@ -27,6 +27,8 @@ for p in ptms:
         ax.scatter(x,y, label=p, marker="o", s=100)
 y,x = np.where(npVals == "")
 ax.scatter(x,y, label="No PTM", color='white', edgecolors=["black"], marker="o", s=100)
+
+fig.tight_layout()
 fig.legend(loc="upper left")
 
 fig.savefig(outSVG, format="svg")
