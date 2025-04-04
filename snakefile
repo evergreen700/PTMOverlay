@@ -43,6 +43,7 @@ else:
 kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
 ORTHOLOGS = dict()
 CUTOFF = config["cutoff"]
+MIN_PTMS_CUTOFF = CUTOFF if "min_ptms" not in config else config["min_ptms"]
 for k in kofiles:
   with open(k,"r") as inFile:
     for l in inFile:
@@ -50,9 +51,9 @@ for k in kofiles:
       if len(pair)==2:
         ORTHOLOGS[pair[1]] = ORTHOLOGS.get(pair[1],0)+1
 if RORTHOLOGS=="ALL":
-  ORTHOLOGS = [i for i,j in ORTHOLOGS.items() if j > CUTOFF] 
+  ORTHOLOGS = [i for i,j in ORTHOLOGS.items() if j >= CUTOFF] 
 else:
-  ORTHOLOGS = {i for i,j in ORTHOLOGS.items() if j > CUTOFF}
+  ORTHOLOGS = {i for i,j in ORTHOLOGS.items() if j >= CUTOFF}
   for i in set(RORTHOLOGS) - ORTHOLOGS:
     print(i,"will not be aligned due to an insufficent number of sequences (n < "+str(CUTOFF)+")")
   ORTHOLOGS = ORTHOLOGS.intersection(set(RORTHOLOGS))
@@ -99,7 +100,19 @@ rule preAlignBenchmark:
     html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     pdfs=expand(TREE_ALIGN_DIR+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
-    taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
+    svg=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.svg',
+    #taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
+    #commenting this out until Camille fixes it    
+
+rule plotCSV:
+  input:
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv'
+  output:
+    svg=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.svg'
+  shell:
+    '''
+    {PYTHON} scripts/plot_csv_table.py {input.csv} {output.svg}
+    '''
 
 rule filterCSV:
   input:
@@ -108,7 +121,7 @@ rule filterCSV:
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv'
   shell:
     '''
-    {PYTHON} scripts/filter_ptm_table.py {input.csv} {output.csv}
+    {PYTHON} scripts/filter_ptm_table.py {input.csv} {output.csv} {MIN_PTMS_CUTOFF}
     '''
 
 rule makeBigCSV:
@@ -311,13 +324,16 @@ rule figures:
   input:
     pdf=TREE_ALIGN_DIR+'/Phospho_Acetyl_MonoMethyl_DiMethyl_TriMethyl/K01689__ENO1_2_3__enolase_1_2_3.tree.pdf',
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
-    tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
+    #tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
   output:
     pdf='figures/figure2_Enolase.pdf',
-    csv='figures/figure4_Glycolysis_ptms.csv',
-    tree='figures/figure4_Glycolysis_tree.pdf'
+    svg='figures/figure4_Glycolysis_ptms.svg',
+    #tree='figures/figure4_Glycolysis_tree.pdf'
+  params:
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_organized_ptms.csv',
   shell:
     '''
-    {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {input.tree} {output.pdf} {output.csv} {output.tree}
+    {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {input.tree} {output.pdf} {params.csv} {output.tree}
+    {PYTHON} scripts/plot_csv_table.py {params.csv} {output.svg}
     '''
 
