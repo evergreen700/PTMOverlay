@@ -1,22 +1,12 @@
-
 # python command (usually python3 or python)
 python: python3
-
 
 ### input directories ###
 
 # these directories/filepaths must contain info as described in the README
-proteome_dir: proteome #this directory must exist and contain proteomes (.faa) and kegg annotations (.kegg.txt)
-pepXML_dir: mass_spec #this directory must exist and have one subdirectory for each ptm type
+proteome_dir: proteome #this directory must exist and contain proteomes (.faa) and kegg annotations (.kegg.txt) for each organism
+pepXML_dir: mass_spec #this directory must exist and have one subdirectory (with matching name) for each ptm type. Each subdirectory must have one .pepXML mass spec file for each organism
 species_info: index_umb_taxa_gca.tsv #this must exist
-
-
-### output directories ###
-
-# these directories will be created if they do not exist
-final_alignment_dir: align_reports
-tree_final_alignments: align_reports
-
 
 ### PTM types ###
 
@@ -29,34 +19,32 @@ ptm_types:
   DiMethyl: 28
   TriMethyl: 42
 
-
 ### alignment report parameters ###
 
 batch_name: Glycolysis
 
-    #orthologs_to_align: #can also provide a minimum coverage instead of specific ids (ie, all>31) but this will generate a ton of files and may cause snakemake to crash due to filesystem delays. You have been warned
-    #   - K01647
-    #   - K27802
-    #   - K00031
-    #   - K00164
-    #   - K01902
-    #   - K00239
-    #   - K01676
-    #   - K00116
-pathways:
+#orthologs_to_align: #list of kegg ID's (eg, K01689) or "all"
+#   - K01647
+#   - K27802
+#   - K00031
+#   - K00164
+#   - K01902
+#   - K00239
+#   - K01676
+#   - K00116
+
+pathways: #alternative to a list of orthologs
   - ko00010
-cutoff: 15 #how many sequences/species that are required for an alignment
-row_length: 100 #the length of each row in the final report
-#select_intervals:
+
+ortholog_sequence_cutoff: 15 #how many sequences/species that are required to perform alignment. Lowest allowed value is 2
+min_ptms: 15 #min ptms for a cite to be in the filtered csv output. Will default to ortholog_sequence_cutoff.
+
+row_length: 100 #the length of each row in the final ortholog reports
+#select_intervals: #specifc intervals to include in final ortholog reports, inclusive. Default is to include everything
 #  - [0,60]
 #  - [200,225]
 
+### output directory ###
 
-### intermediate directories ###
-
-# these directories will be created if they do not exist
-ptm_dir: intermediates/ptm
-pre_align_fasta_dir: intermediates/preAlign
-raw_alignment_dir: intermediates/rawAlign #cannot be the same dir as pre_align_fasta_dir
-tree_intermediates: intermediates/tree
-taxon_tree_intermediates: intermediates/taxon_tree
+# this directory will be created if they do not exist
+final_alignment_dir: align_reports

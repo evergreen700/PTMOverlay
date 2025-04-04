@@ -25,15 +25,15 @@ PTM_TYPES=config["ptm_types"].keys()
 #-----------DIR SETUP------------------
 PROTEOMES=config["proteome_dir"]
 PEPXML_DIR=config["pepXML_dir"]
-PTM_DIR=config["ptm_dir"]
-PRE_ALIGN_FASTAS=config["pre_align_fasta_dir"]
-RAW_ALIGNMENTS=config["raw_alignment_dir"]
-MUSCLE='runMUSCLE.py'
-TREE_DIR=config["tree_intermediates"]
-TREE_ALIGN_DIR=config["tree_final_alignments"]
 SPECIES_INFO=config["species_info"]
+
 FINAL_ALIGNMENTS=config["final_alignment_dir"]
-TAXON_TREE_DIR=config["taxon_tree_intermediates"]
+
+PTM_DIR="intermediates/ptm"
+PRE_ALIGN_FASTAS="intermediates/preAlign"
+RAW_ALIGNMENTS="intermediates/rawAlign"
+TREE_DIR="intermediates/tree"
+TAXON_TREE_DIR="intermediates/taxon_tree"
 if "batch_name" in config:
   BATCH_PREFIX = config["batch_name"]+"_"
 else:
@@ -42,7 +42,7 @@ else:
 #----------HANDLING FOR "ALL" KO'S----------
 kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
 ORTHOLOGS = dict()
-CUTOFF = config["cutoff"]
+CUTOFF = 2 if "ortholog_sequence_cutoff" not in config else max(config["ortholog_sequence_cutoff"],2)
 MIN_PTMS_CUTOFF = CUTOFF if "min_ptms" not in config else config["min_ptms"]
 for k in kofiles:
   with open(k,"r") as inFile:
@@ -98,7 +98,7 @@ wildcard_constraints:
 rule preAlignBenchmark:
   input:
     html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
-    pdfs=expand(TREE_ALIGN_DIR+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
+    pdfs=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
     svg=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.svg',
     #taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
@@ -224,7 +224,7 @@ rule generate_tree:
     json=TREE_DIR+'/{ko}__{ptm_types}.json',
     tsv= SPECIES_INFO
   output:
-    pdf=TREE_ALIGN_DIR+'/{ptm_types}/{ko}__{symbol}__{name}.tree.pdf'
+    pdf=FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{symbol}__{name}.tree.pdf'
   shell:
     '''
     {PYTHON} scripts/generateTree.py {input.html} {input.fasta} {input.nh} {input.json} {input.tsv} {output.pdf}
@@ -322,7 +322,7 @@ rule generate_taxon_tree:
 
 rule figures:
   input:
-    pdf=TREE_ALIGN_DIR+'/Phospho_Acetyl_MonoMethyl_DiMethyl_TriMethyl/K01689__ENO1_2_3__enolase_1_2_3.tree.pdf',
+    pdf=FINAL_ALIGNMENTS+'/Phospho_Acetyl_MonoMethyl_DiMethyl_TriMethyl/K01689__ENO1_2_3__enolase_1_2_3.tree.pdf',
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
     #tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
   output:
@@ -333,7 +333,7 @@ rule figures:
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_organized_ptms.csv',
   shell:
     '''
-    {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {input.tree} {output.pdf} {params.csv} {output.tree}
+    {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {input.csv} {output.pdf} {params.csv} {output.svg}
     {PYTHON} scripts/plot_csv_table.py {params.csv} {output.svg}
     '''
 
