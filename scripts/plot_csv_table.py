@@ -9,6 +9,7 @@ outSVG = sys.argv[2]
 bigTable = pd.read_csv(inCSV, header=[0,1], index_col=0, dtype=str)
 bigTable.fillna("",inplace=True)
 npVals = bigTable.to_numpy()
+npVals = np.flip(npVals, 0)
 
 ptms = np.unique(npVals)
 fig,ax = plt.subplots(1,1, figsize=(npVals.shape*np.array([.5,1])))
