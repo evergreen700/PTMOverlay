@@ -120,7 +120,7 @@ rule makeBigCSV:
   params:
     ptm="@@".join(PTM_TYPES),
     ko="@@".join(ORTHOLOGS),
-    kn="@@".join(NAMES)
+    kn="@@".join(SYMBOLS)
   shell:
     '''
     {PYTHON} scripts/ptm_table.py {RAW_ALIGNMENTS} {PTM_DIR} '{params.ptm}' '{params.ko}' '{params.kn}' {output.csv}
@@ -240,6 +240,9 @@ rule extract_example_data:
     {PYTHON} scripts/extract_example_data.py
     '''
 
+######## Code from Matthew Cloward for generating proteome phylogenies ###############
+
+
 rule get_species_ids:
   input:
     info = SPECIES_INFO
@@ -300,3 +303,19 @@ rule generate_taxon_tree:
     '''
     {PYTHON} scripts/generateTaxonTree.py {input.tree_nh} {output.final_tree}
     '''
+
+  
+########## Hardcoded Rules for reproducibility #################
+
+rule figures:
+  input:
+    pdf=TREE_ALIGN_DIR+'/Phospho_Acetyl_MonoMethyl_DiMethyl_TriMethyl/K01689__ENO1_2_3__enolase_1_2_3.tree.pdf',
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv'
+  output:
+    pdf='figures/figure2_Enolase.pdf',
+    csv='figures/figure4_Glycolysis.csv'
+  shell:
+    '''
+    {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {output.pdf} {output.csv}
+    '''
+
