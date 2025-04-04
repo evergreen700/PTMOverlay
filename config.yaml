@@ -59,3 +59,4 @@ ptm_dir: intermediates/ptm
 pre_align_fasta_dir: intermediates/preAlign
 raw_alignment_dir: intermediates/rawAlign #cannot be the same dir as pre_align_fasta_dir
 tree_intermediates: intermediates/tree
+taxon_tree_intermediates: intermediates/taxon_tree

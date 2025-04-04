@@ -33,6 +33,7 @@ TREE_DIR=config["tree_intermediates"]
 TREE_ALIGN_DIR=config["tree_final_alignments"]
 SPECIES_INFO=config["species_info"]
 FINAL_ALIGNMENTS=config["final_alignment_dir"]
+TAXON_TREE_DIR=config["taxon_tree_intermediates"]
 if "batch_name" in config:
   BATCH_PREFIX = config["batch_name"]+"_"
 else:
@@ -97,7 +98,8 @@ rule preAlignBenchmark:
   input:
     html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     pdfs=expand(TREE_ALIGN_DIR+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
-    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv'
+    csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv'.
+    taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
 
 rule filterCSV:
   input:
@@ -236,6 +238,70 @@ rule extract_example_data:
   shell:
     '''
     {PYTHON} scripts/extract_example_data.py
+    '''
+
+######## Code from Matthew Cloward for generating proteome phylogenies ###############
+
+
+rule get_species_ids:
+  input:
+    info = SPECIES_INFO
+  output:
+    ids = TAXON_TREE_DIR+'/IDs.txt'
+  shell:
+    '''
+    {PYTHON} scripts/extract_species_ID.py {output.ids} {input.info}
+    '''
+
+rule get_taxonomy_objects_from_ids:
+  input:
+    ids = TAXON_TREE_DIR+'/IDs.txt'
+  output:
+    taxons = TAXON_TREE_DIR+'/TaxonomyObjs.txt'
+  shell:
+    '''
+    bash scripts/getTaxonomyObjsFromAccessionIDs.sh {input.ids} {output.taxons}
+    '''
+
+rule get_taxons_from_objects:
+  input:
+    ids = TAXON_TREE_DIR+'/IDs.txt',
+    taxons = TAXON_TREE_DIR+'/TaxonomyObjs.txt'
+  output:
+    tax = TAXON_TREE_DIR+'/Taxonomy.tsv'
+  shell:
+    '''
+    {PYTHON} scripts/getTaxonomiesFromTaxonomyObjs.py {input.ids} {input.taxons} {output.tax}
+    '''
+
+rule convert_taxonomy_to_tree:
+  input:
+    tax = TAXON_TREE_DIR+'/Taxonomy.tsv'
+  output:
+    tree_json = TAXON_TREE_DIR+'/Tree.json'
+  shell:
+    '''
+    {PYTHON} scripts/convertTaxononmyFileToTree.py {input.tax} {output.tree_json}
+    '''
+
+rule tree_to_nh:
+  input:
+    tree_json = TAXON_TREE_DIR+'/Tree.json'
+  output:
+    tree_nh = TAXON_TREE_DIR+'/Tree.tre'
+  shell:
+    '''
+    {PYTHON} scripts/jsonToNewick.py {input.tree_json} {output.tree_nh}
+    '''
+
+rule generate_taxon_tree:
+  input:
+    tree_nh = TAXON_TREE_DIR+'/Tree.tre'
+  output:
+    final_tree = FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
+  shell:
+    '''
+    {PYTHON} scripts/generateTaxonTree.py {input.tree_nh} {output.final_tree}
     '''
 
   
