@@ -45,7 +45,7 @@ batch_name: Glycolysis
     #   - K00116
 pathways:
   - ko00010
-cutoff: 15
+cutoff: 15 #how many sequences/species that are required for an alignment
 row_length: 100 #the length of each row in the final report
 #select_intervals:
 #  - [0,60]
