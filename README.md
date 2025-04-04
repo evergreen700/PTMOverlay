@@ -32,11 +32,21 @@ snakemake
 `index_umb_taxa_gca.tsv` is a tab-separated file that isused to match between mass spec strain IDs (UMB####), species name, and proteome assembly (GCA). If you are using your own mass spec and proteome files, make sure that the names are in this tsv.
 
 ## Example run
-The proteome and kegg annotation files are included as an example. To install the corresponding mass spec data, run:
-```
-python3 scripts/download_example_data.py
-```
-Once the mass spec data is installed, you should have a `mass_spec` directory with 5 subdirectories. Try the tool out by running snakemake:
+The proteome and kegg annotation files are included as an example. Until we graduate and the files are no longer hosted on BYU Box, the proteome files can be downloaded and installed from Box automatically when running snakemake:
 ```
 snakemake
 ```
+We recommend keeping the config file the way it is for the first run. If there are other orthologs or pathways you want to look at on the 31 species, rerunning with modified parameters will run faster if intermediates are already generated.
+
+## Figure regeneration (Capstone Reproducibility)
+To generate the figures used in BIO 465: Bioinformatics Capstone, run
+```
+snakemake figures
+```
+The figures on our poster were as follows:
+1. PTMOverlay flowchart (made by hand)
+2. Enolase PTMs conservation on select intervals (generated thru code and edited in Adobe Illustrator)
+3. Conserved PTM sites on enolase structure (made by Youngki You at PNNL)
+4. Significant PTM sites in glycolysis pathway (generated thru code and edited in Adobe Illustrator)
+
+The pre-Adobe Illustrator components of figures 2 and 4 will be in the `figures` folder after running.
