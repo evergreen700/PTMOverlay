@@ -4,7 +4,7 @@ Capstone PTM alignment
 ## Dependencies
 This workflow uses the python packages pyteomics and snakemake
 ```
-pip install pyteomics biopython lxml snakemake
+pip install pyteomics biopython lxml snakemake ncbi-taxonomist
 ```
 
 ## Execution
