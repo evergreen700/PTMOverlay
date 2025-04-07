@@ -70,7 +70,12 @@ for row in table_rows[:species_count]:
     modifications[species_id] = mod_positions
 
 # ---- Convert to Biopython format ---- #
-alignment_records = [SeqRecord(Seq(seq), id=name, description="") for name, seq in species_data.items()]
+def normalize_sequence(seq):
+    return seq.replace("…", ".")  # replace Unicode ellipsis with ASCII dot
+alignment_records = [
+    SeqRecord(Seq(normalize_sequence(seq)), id=name, description="")
+    for name, seq in species_data.items()
+]
 
 with open(outfile, "w") as fasta_file:
     SeqIO.write(alignment_records, fasta_file, "fasta")
