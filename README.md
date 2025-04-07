@@ -6,12 +6,13 @@ This workflow uses the python packages pyteomics and snakemake
 ```
 pip install pyteomics biopython lxml snakemake ncbi-taxonomist
 ```
-## Package versions:
+### Tested Package versions:
 - pyteomics: 4.7.5
 - biopython: 1.85
 - lxml: 5.3.1
 - snakemake: 9.1.1
 - ncbi-taxonomist: 1.2.1
+These version are not the only ones that will work, but are the ones that were used by the authors.
 
 ## Execution
 To run the workflow, place proteomes and kegg annotation files in the folder designated as `proteome_dir` in the config file. Place .pepXML files in folders sorted by ptm type within the folder designated as `pepXML_dir` in the config file. Below is an example of the file structure:
