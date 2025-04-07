@@ -2,6 +2,7 @@ from Bio import Phylo
 import sys
 import matplotlib.pyplot as plt
 import re
+import os
 
 infile = sys.argv[1]
 outfile = sys.argv[2]
