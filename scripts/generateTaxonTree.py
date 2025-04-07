@@ -6,6 +6,8 @@ import re
 infile = sys.argv[1]
 outfile = sys.argv[2]
 
+os.makedirs(os.path.dirname(outfile), exist_ok=True)
+
 species_dict = {}
 
 def extract_species_names_from_tre(file_path):

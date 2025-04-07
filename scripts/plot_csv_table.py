@@ -5,6 +5,7 @@ import sys
 
 inCSV = sys.argv[1]
 outSVG = sys.argv[2]
+dot_size=300
 
 bigTable = pd.read_csv(inCSV, header=[0,1], index_col=0, dtype=str)
 bigTable.fillna("",inplace=True)
@@ -24,9 +25,9 @@ ax.grid(True, axis='y')
 for p in ptms:
     if len(p)>1:
         y,x = np.where(npVals == p)
-        ax.scatter(x,y, label=p, marker="o", s=100)
+        ax.scatter(x,y, label=p, marker="o", s=dot_size)
 y,x = np.where(npVals == "")
-ax.scatter(x,y, label="No PTM", color='white', edgecolors=["black"], marker="o", s=100)
+ax.scatter(x,y, label="No PTM", color='white', edgecolors=["black"], marker="o", s=dot_size)
 
 fig.tight_layout()
 fig.legend(loc="upper left")
