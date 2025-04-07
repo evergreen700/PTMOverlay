@@ -46,6 +46,13 @@ snakemake
 ```
 We recommend keeping the config file the way it is for the first run. If there are other orthologs or pathways you want to look at on the 31 species, rerunning with modified parameters will run faster if intermediates are already generated.
 
+### Docker
+
+The workflow can also be run within the docker container within the PTMOverlay directory
+```
+docker run -v ./:/PTMOverlay 527862912cd4 /bin/bash -c "cd /PTMOverlay && snakemake"
+```
+
 ## Figure regeneration (Capstone Reproducibility)
 To generate the figures used in BIO 465: Bioinformatics Capstone, run
 ```
