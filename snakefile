@@ -101,8 +101,7 @@ rule preAlignBenchmark:
     pdfs=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
     svg=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.svg',
-    #taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
-    #commenting this out until Camille fixes it    
+    taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
 
 rule plotCSV:
   input:
@@ -324,16 +323,16 @@ rule figures:
   input:
     pdf=FINAL_ALIGNMENTS+'/Phospho_Acetyl_MonoMethyl_DiMethyl_TriMethyl/K01689__ENO1_2_3__enolase_1_2_3.tree.pdf',
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
-    #tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
+    tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
   output:
     pdf='figures/figure2_Enolase.pdf',
     svg='figures/figure4_Glycolysis_ptms.svg',
-    #tree='figures/figure4_Glycolysis_tree.pdf'
+    tree='figures/figure4_Glycolysis_tree.pdf'
   params:
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_organized_ptms.csv',
   shell:
     '''
-    {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {input.csv} {output.pdf} {params.csv} {output.svg}
+    {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {input.tree} {output.pdf} {params.csv} {output.tree}
     {PYTHON} scripts/plot_csv_table.py {params.csv} {output.svg}
     '''
 

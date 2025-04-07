@@ -40,9 +40,9 @@ ortholog_sequence_cutoff: 15 #how many sequences/species that are required to pe
 min_ptms: 15 #min ptms for a cite to be in the filtered csv output. Will default to ortholog_sequence_cutoff.
 
 row_length: 100 #the length of each row in the final ortholog reports
-#select_intervals: #specifc intervals to include in final ortholog reports, inclusive. Default is to include everything
-#  - [0,60]
-#  - [200,225]
+select_intervals: #specifc intervals to include in final ortholog reports, inclusive. Default is to include everything
+  - [0,60]
+  - [200,225]
 
 ### output directory ###
 

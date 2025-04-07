@@ -7,11 +7,11 @@ import pandas as pd
 
 inPDF = sys.argv[1]
 inCSV = sys.argv[2]
-#inTree = sys.argv[3]
+inTree = sys.argv[3]
 
 outPDF = sys.argv[4]
 outCSV = sys.argv[5]
-#outTree = sys.argv[6]
+outTree = sys.argv[6]
 
 os.makedirs('figures',exist_ok=True)
 
@@ -56,4 +56,4 @@ ptmTable = ptmTable[colOrder]
 ptmTable.to_csv(outCSV)
 
 #Fig4-tree/pdf: copy over
-#shutil.copy(inTree, outTree)
+shutil.copy(inTree, outTree)
