@@ -51,7 +51,7 @@ PTMOverlay
 + ...
 ```
 
-`index_umb_taxa_gca.tsv` is a tab-separated file that isused to match between mass spec strain IDs (UMB####), species name, and proteome assembly (GCA). If you are using your own mass spec and proteome files, make sure that the names are in this tsv.
+`index_umb_taxa_gca.tsv` is a tab-separated file that is used to match between mass spec strain IDs (UMB####), species name, and proteome assembly (GCA). If you are using your own mass spec and proteome files, make sure that the names are in this tsv.
 
 ### Docker Execution
 To run the workflow from the docker image, run
