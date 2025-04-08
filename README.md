@@ -17,7 +17,8 @@ docker build -t ptm-overlay .
 Install dependencies using pip:
 ```
 pip install matplotlib pandas pyteomics biopython lxml snakemake ncbi-taxonomist svgutils six
-brew install pdf2svg
+brew install pdf2svg (Mac)
+sudo apt-get install pdf2svg (Linux)
 ```
 Clone the git repository:
 ```
