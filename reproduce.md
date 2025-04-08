@@ -19,7 +19,7 @@ If the workflow fails because of memory overload during the extract_ptms rule, s
   ```
   docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake figures --resources mem_gb=<container-size>"
   ```
-Where container-size is the size of the docker container in GB. This can be as low as 7 but that will significantly slow things down.\
+Where `<container-size>` is the size of the docker container in GB. This can be as low as 7 but that will significantly slow things down.\
 If you do not want to use docker, use the following commands:
    ```
    cd PTMOverlay
