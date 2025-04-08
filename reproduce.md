@@ -16,6 +16,14 @@ To generate the figures used in BIO 465: Bioinformatics Capstone, follow these s
   docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake figures"
   ```
 
+If you do not want to use docker, use the following commands:
+   ```
+   cd PTMOverlay
+   pip install matplotlib pandas pyteomics biopython lxml snakemake ncbi-taxonomist svgutils six
+   brew install pdf2svg
+   snakemake figures
+   ```
+
 The figures on our poster were as follows:
 1. PTMOverlay flowchart (made by hand)
 2. Enolase PTMs conservation on select intervals (generated thru code and edited in Adobe Illustrator)
