@@ -9,6 +9,7 @@ git clone https://github.com/evergreen700/PTMOverlay
 ```
 Then, build the docker image:
 ```
+cd PTMOverlay
 docker build -t ptm-overlay .
 ```
 
@@ -56,7 +57,6 @@ PTMOverlay
 ### Docker Execution
 To run the workflow from the docker image, run
 ```
-cd PTMOverlay
 docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake"
 ```
 
