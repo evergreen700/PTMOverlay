@@ -179,7 +179,7 @@ rule extract_ptms:
   output:
     ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
   resources:
-    mem_gb=5
+    mem_gb=3
   shell:
     '''
     {PYTHON} scripts/parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {SPECIES_INFO} {PTM_DIR} {wildcards.ptm_type}
