@@ -327,12 +327,18 @@ rule figures:
   output:
     pdf='figures/figure2_Enolase.pdf',
     svg='figures/figure4_Glycolysis_ptms.svg',
-    tree='figures/figure4_Glycolysis_tree.pdf'
+    tree='figures/figure4_Glycolysis_tree.pdf',
+    combined='figures/figure4_combined.svg'
   params:
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_organized_ptms.csv',
+    tree_svg=TAXON_TREE_DIR+'/taxon_tree.svg',
+    scaled_tree=TAXON_TREE_DIR+'/scaled_taxon_tree.svg'
   shell:
     '''
     {PYTHON} scripts/gatherFigures.py {input.pdf} {input.csv} {input.tree} {output.pdf} {params.csv} {output.tree}
     {PYTHON} scripts/plot_csv_table.py {params.csv} {output.svg}
+    pdf2svg {input.tree} {params.tree_svg}
+    {PYTHON} scripts/scale_svg.py {params.tree_svg} {params.scaled_tree}
+    {PYTHON} scripts/combine_taxon_pathway.py {params.scaled_tree} {output.svg} {output.combined}
     '''
 
