@@ -20,8 +20,7 @@ shutil.copy(inPDF, outPDF)
 
 #Fig4-csv: reorder the rows according to the tree and the columns according to the pathway order
 colOrder = ["GAPDH","PGK","ENO1_2_3","pfkA","adhE","GPI","PK","FBA","TPI","glk"]
-rowOrder = """
-GCA_002847685.2, Dermabacter hominis
+rowOrder = """GCA_002847685.2, Dermabacter hominis
 GCA_002847825.1, Kytococcus schroeteri
 GCA_019890915.1, Micrococcus luteus
 GCA_002847765.1, Alloscardovia omnicolens
@@ -49,8 +48,7 @@ GCA_030222485.2, Globicatella sanguinis
 GCA_030230945.1, Enterococcus faecalis
 GCA_030225245.1, Staphylococcus warneri
 GCA_030225265.1, Staphylococcus epidermidis
-GCA_002884815.1, Gardnerella piotii
-""".split("\n")
+GCA_002884815.1, Gardnerella piotii""".split("\n")
 
 ptmTable = pd.read_csv(inCSV, header=[0,1], index_col=0, dtype=str)
 ptmTable = ptmTable.reindex(rowOrder)
