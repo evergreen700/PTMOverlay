@@ -3,12 +3,13 @@ Capstone PTM alignment
 
 ## Installation
 ### Docker (Recommended)
-This workflow can be run from docker. To set it up, first clone the git repository:
+This workflow can be run from docker. Docker can be installed from https://docs.docker.com. To set up the workflow, first clone the git repository:
 ```
 git clone https://github.com/evergreen700/PTMOverlay
 ```
 Then, build the docker image:
 ```
+cd PTMOverlay
 docker build -t ptm-overlay .
 ```
 
@@ -51,12 +52,11 @@ PTMOverlay
 + ...
 ```
 
-`index_umb_taxa_gca.tsv` is a tab-separated file that isused to match between mass spec strain IDs (UMB####), species name, and proteome assembly (GCA). If you are using your own mass spec and proteome files, make sure that the names are in this tsv.
+`index_umb_taxa_gca.tsv` is a tab-separated file that is used to match between mass spec strain IDs (UMB####), species name, and proteome assembly (GCA). If you are using your own mass spec and proteome files, make sure that the names are in this tsv.
 
 ### Docker Execution
 To run the workflow from the docker image, run
 ```
-cd PTMOverlay
 docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake"
 ```
 
