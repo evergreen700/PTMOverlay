@@ -31,8 +31,6 @@ We have not extensively tested all the packages this tool requires. These are th
 - snakemake: 9.1.1
 - ncbi-taxonomist: 1.2.1
 
-These versions are not the only ones that will work, but are the ones that were used by the authors.
-
 ## Execution
 To run the workflow, place proteomes and kegg annotation files in the folder designated as `proteome_dir` in the config file. Place .pepXML files in folders sorted by ptm type within the folder designated as `pepXML_dir` in the config file. Below is an example of the file structure:
 ```
