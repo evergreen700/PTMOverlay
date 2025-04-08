@@ -2,7 +2,7 @@
 This can be reproduced on Mac and Linux machines.\
 To generate the figures used in BIO 465: Bioinformatics Capstone, follow these steps: 
 1. Install docker from https://docs.docker.com
-2. Clone this repository by running this in your terminal: \
+2. Clone this repository by running this in your terminal:
    ```
    git clone https://github.com/evergreen700/PTMOverlay
    ```
@@ -15,7 +15,11 @@ To generate the figures used in BIO 465: Bioinformatics Capstone, follow these s
   ```
   docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake figures"
   ```
-
+If the workflow fails because of memory overload during the extract_ptms rule, specify the size of your docker container in the snakemake command:
+  ```
+  docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake figures --resources mem_gb=<container-size>"
+  ```
+Where container-size is the size of the docker container in GB. This can be as low as 7 but that will significantly slow things down.\
 If you do not want to use docker, use the following commands:
    ```
    cd PTMOverlay
