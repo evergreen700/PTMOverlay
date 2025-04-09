@@ -55,7 +55,12 @@ PTMOverlay
 `index_umb_taxa_gca.tsv` is a tab-separated file that is used to match between mass spec strain IDs (UMB####), species name, and proteome assembly (GCA). If you are using your own mass spec and proteome files, make sure that the names are in this tsv.
 
 ### Docker Execution
-To run the workflow from the docker image, run
+To run the workflow from the docker image on Windows, run
+```
+docker run -v .\:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake"
+```
+
+To run the workflow from the docker image on MacOS or Linux, run
 ```
 docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake"
 ```
