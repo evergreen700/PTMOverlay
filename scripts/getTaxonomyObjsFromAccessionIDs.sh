@@ -15,8 +15,6 @@ truncate -s 0 $INTERMEDIATE_PATH
 if [[ $(tail -c 1 $ACCESSION_ID_PATH) != "" ]]; then
   echo "" >> "$ACCESSION_ID_PATH"
 fi
-
-
 function processAccessionIDs() {echo $numIDs
   # remove the trailing comma and space
   ACCESSION_IDS=${ACCESSION_IDS%, }
