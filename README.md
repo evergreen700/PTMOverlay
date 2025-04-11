@@ -5,12 +5,16 @@ Capstone PTM alignment
 ### Docker (Recommended)
 This workflow can be run from docker. Docker can be installed from https://docs.docker.com. To set up the workflow, first clone the git repository:
 ```
-git config core.autocrlf false
 git clone https://github.com/evergreen700/PTMOverlay
+cd PTMOverlay
+```
+If you are running the docker container on a Windows machine, git will automatically change a script in a way that doesn't work with the docker image. Fix it with this:
+```
+git config core.autocrlf false
+git checkout .\scripts\*
 ```
 Then, build the docker image:
 ```
-cd PTMOverlay
 docker build -t ptm-overlay .
 ```
 
