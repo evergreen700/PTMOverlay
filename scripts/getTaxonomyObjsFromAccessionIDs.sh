@@ -3,7 +3,9 @@ ACCESSION_ID_PATH=$1
 # the output file
 TAXONOMY_OBJS_PATH=$2
 
-if [ -z "$ACCESSION_ID_PATH" ] || [ -z "$TAXONOMY_OBJS_PATH" ]; then
+INTERMEDIATE_PATH="/tmp/tree.txt"
+
+if [ -z "$ACCESSION_ID_PATH" ] || [ -z "$INTERMEDIATE_PATH" ]; then
   echo "Incorrect number of arguments. Need at least two paths:"
   echo -e "\tInput Path"
   echo -e "\tOutput Path"
@@ -11,7 +13,7 @@ if [ -z "$ACCESSION_ID_PATH" ] || [ -z "$TAXONOMY_OBJS_PATH" ]; then
 fi
 
 # clear the contents of the output file
-truncate -s 0 $TAXONOMY_OBJS_PATH
+truncate -s 0 $INTERMEDIATE_PATH
 
 # append a newline character to the end of the file if it doesn't end with one
 if [[ $(tail -c 1 $ACCESSION_ID_PATH) != "" ]]; then
@@ -25,7 +27,7 @@ function processAccessionIDs() {
   # get the taxonomy objects associated with each accession ID
   TAXONOMY_OBJS=$( ncbi-taxonomist map -edb assembly --accessions $ACCESSION_IDS | ncbi-taxonomist resolve -m )
   # print the taxonomyObjs to the output file
-  echo -e "$TAXONOMY_OBJS" >> $TAXONOMY_OBJS_PATH
+  echo -e "$TAXONOMY_OBJS" >> $INTERMEDIATE_PATH
 }
 
 # loop through each accession id and append to a variable
@@ -41,5 +43,7 @@ while read ACCESSION_ID; do
   fi 
 done < "$ACCESSION_ID_PATH"
 processAccessionIDs $ACCESSION_IDS
+
+mv "$TAXONOMY_OBJS_PATH" "$INTERMEDIATE_PATH"
 
 echo "done."
