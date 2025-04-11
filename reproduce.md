@@ -6,6 +6,11 @@ To generate the figures used in BIO 465: Bioinformatics Capstone, follow these s
    ```
    git clone https://github.com/evergreen700/PTMOverlay
    ```
+   If you are running the docker container on a Windows machine, git will automatically change a script in a way that doesn't work with the docker image. Fix it with this:
+   ```
+   git config core.autocrlf false
+   git checkout .\scripts\*
+   ```
 3. Navigate inside of this repository and build the docker image:
    ```
    cd PTMOverlay
