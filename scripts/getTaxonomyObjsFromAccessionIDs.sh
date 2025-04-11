@@ -33,7 +33,7 @@ while read ACCESSION_ID; do
   if [ $(( $numIDs % 300 )) -eq 0 ] ; then
     processAccessionIDs $numIDs $ACCESSION_IDS
     ACCESSION_IDS=""
-  fi 
+  fi
 done < "$ACCESSION_ID_PATH"
 processAccessionIDs $ACCESSION_IDS
 mv "$TAXONOMY_OBJS_PATH" "$INTERMEDIATE_PATH"
