@@ -35,7 +35,7 @@ while read ACCESSION_ID; do
     ACCESSION_IDS=""
   fi
 
-done < "$ACCESSION_ID_PATH"
+#done < "$ACCESSION_ID_PATH"
 processAccessionIDs $ACCESSION_IDS
 mv "$TAXONOMY_OBJS_PATH" "$INTERMEDIATE_PATH"
 echo "done."
