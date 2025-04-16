@@ -1,5 +1,5 @@
 ## Figure regeneration (Capstone Reproducibility)
-This can be reproduced on Mac and Linux machines.\
+This can be reproduced on Linux, Windows and SOME Mac (not ARM M4) machines.\
 To generate the figures used in BIO 465: Bioinformatics Capstone, follow these steps: 
 1. Install docker from https://docs.docker.com
 2. Clone this repository by running this in your terminal:
