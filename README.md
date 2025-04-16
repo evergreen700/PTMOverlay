@@ -1,5 +1,6 @@
 # PTMOverlay
 Capstone PTM alignment
+This pipeline has been successfully tested on Linux, Windows and some Mac systems. It is known to have issues on ARM-based M4 systems.
 
 ## Installation
 ### Docker (Recommended)
@@ -62,12 +63,12 @@ PTMOverlay
 ### Docker Execution
 To run the workflow from the docker image on Windows, run
 ```
-docker run -v .\:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake"
+docker run -v .\:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all"
 ```
 
 To run the workflow from the docker image on MacOS or Linux, run
 ```
-docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake"
+docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all"
 ```
 
 ### Native Execution
