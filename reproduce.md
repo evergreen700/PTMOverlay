@@ -18,11 +18,11 @@ To generate the figures used in BIO 465: Bioinformatics Capstone, follow these s
    ```
 4. Run snakemake from inside the docker image:  
   ```
-  docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake figures"
+  docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake figures --cores all"
   ```
 If the workflow fails because of memory overload during the extract_ptms rule, specify the size of your docker container in the snakemake command:
   ```
-  docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake figures --resources mem_gb=<container-size>"
+  docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake figures --cores all --resources mem_gb=<container-size>"
   ```
 Where `<container-size>` is the size of the docker container in GB. This can be as low as 7 but that will significantly slow things down.\
 If you do not want to use docker, use the following commands:
