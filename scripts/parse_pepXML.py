@@ -39,6 +39,7 @@ else:
     shift_size = 0
 
 aa_mass = aa_mass["base"]
+ptm_mass = {j:i for i,j in ptm_mass.items()}
 
 
 UMB_to_GCA = {}
@@ -68,14 +69,20 @@ def get_index(peptide, sequence, loc):
     try:
         i = sequence.index(peptide)
         #filter out locs that are 0/-1
-        return i, i+len(peptide), [i + int(m["position"]) - 1 for m in loc if int(m["position"])>0 and aa_mass[sequence[int(m['position'])]]+shift_size == int(m['mass'])]
+        sites = dict()
+        for m in loc:
+            if int(m["position"])>0:
+                shift_size = int(m['mass']) - aa_mass[sequence[int(m['position'])]]
+                if shift_size in ptm_mass:
+                    sites[i + int(m["position"]) - 1] = ptm_mass[shift_size]
+        return sites
     except ValueError:
         return None
 
 def search_peptide(peptide, protein_id, UMB, locations):
     """Searches for a peptide within a protein sequence stored in memory."""
     GCA = UMB_to_GCA.get(UMB, 'NA')[1] + ".faa"
-    sequence = genebank_dict.get(GCA, {}).get(protein_id)
+    sequence = genebank_dict.get(GCA, dict()).get(protein_id, None)
     if sequence:
         return get_index(peptide, sequence, locations)
     return None
@@ -86,38 +93,27 @@ def process_file(file):
     """Extracts unique proteins and site indexes from a .pepXML file."""
     UMB = UMB_pattern.search(os.path.basename(file)).group()
     species, assembly = UMB_to_GCA.get(UMB, 'NA')
-    ka = os.path.join(genebank_dir, assembly+".kegg.txt")
-    orthologs = dict()
-    ortho_org = dict()
-    with open(ka,"r") as inFile:
-        for l in inFile:
-            pair = l.split()
-            if len(pair) == 2:
-                orthologs[pair[0]]=pair[1]
-                if pair[1] not in ortho_org:
-                    ortho_org[pair[1]]={pair[0]+", "+assembly+", "+species: {'read_start':dict(),'read_end':dict(),'mod_site':set()}}
-                else:
-                    ortho_org[pair[1]][pair[0]+", "+assembly+", "+species] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
-    try:
-        for entry in pepxml.read(file):
-            search_hit = entry.get('search_hit', [{}])[0]
-            protein = search_hit.get('proteins', [{}])[0].get('protein', "")
-            if not protein or protein not in orthologs or protein.startswith("rev"):
-                continue
-            UMB_match = UMB_pattern.search(entry.get('spectrum', ""))
-            if not UMB_match:
-                continue
-            UMB_string = UMB_match.group()
-            modifications = search_hit.get('modifications', [])
-            if modifications:
-                peptide = search_hit.get('peptide', "")
-                startIdx, endIdx, mod_indices = search_peptide(peptide, protein, UMB_string, modifications)
-                o = orthologs[protein]
-                ortho_org[o][protein+", "+assembly+", "+species]['read_start'][startIdx]=ortho_org[o][protein+", "+assembly+", "+species]['read_start'].get(startIdx,0)+1
-                ortho_org[o][protein+", "+assembly+", "+species]['read_end'][endIdx]=ortho_org[o][protein+", "+assembly+", "+species]['read_end'].get(endIdx,0)+1
-                ortho_org[o][protein+", "+assembly+", "+species]['mod_site'].update(mod_indices)
-    except Exception as e:
-        print(f"Error processing {file}: {e}")
+    ortho_org = defaultdict(dict)
+#    try:
+    for entry in pepxml.read(file):
+        search_hit = entry.get('search_hit', [{}])[0]
+        protein = search_hit.get('proteins', [{}])[0].get('protein', "")
+        if not protein or  protein.startswith("rev"):
+            continue
+        UMB_match = UMB_pattern.search(entry.get('spectrum', ""))
+        if not UMB_match:
+            continue
+        UMB_string = UMB_match.group()
+        modifications = search_hit.get('modifications', [])
+        if modifications:
+            peptide = search_hit.get('peptide', "")
+            mod_indices = search_peptide(peptide, protein, UMB_string, modifications)
+            if mod_indices:
+                if protein not in ortho_org[assembly]:
+                    ortho_org[assembly][protein] = dict()
+                ortho_org[assembly][protein].update(mod_indices)
+#    except Exception as e:
+#        print(f"Error processing {file}: {e}")
 
     return ortho_org
 
@@ -136,22 +132,15 @@ if __name__ == "__main__":
                     subsequence_indexes[key] = dict()
                 for k, v in value.items():
                     if k not in subsequence_indexes[key]:
-                        subsequence_indexes[key][k] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
+                        subsequence_indexes[key][k] = dict()
+                    subsequence_indexes[key][k].update(v)
 
-                    for ki,vi in v['read_start'].items():
-                        if ki not in subsequence_indexes[key][k]['read_start']:
-                            subsequence_indexes[key][k]['read_start'][ki] = 0
-                        subsequence_indexes[key][k]['read_start'][ki]+=vi
+    genebank_dict = {k.removesuffix(".faa"):v for k,v in genebank_dict.items()}
 
-                    for ki,vi in v['read_end'].items():
-                        if ki not in subsequence_indexes[key][k]['read_end']:
-                            subsequence_indexes[key][k]['read_end'][ki] = 0
-                        subsequence_indexes[key][k]['read_end'][ki]+=vi
-
-                    subsequence_indexes[key][k]['mod_site'].update(v['mod_site'])
+    with open(os.path.join(outdir,"seqs.json"), "w") as file:
+        json.dump(genebank_dict, file, indent=4)
+    with open(os.path.join(outdir,"ptms.json"), "w") as file:
+        json.dump(subsequence_indexes, file, indent=4)
     for kid, a in subsequence_indexes.items():
-        for i in a.keys():
-            a[i]["mod_site"] = list(a[i]["mod_site"])
-        #indexes = {i:list(j) for i,j in a.items()}
-        with open(os.path.join(outdir,kid+outsuffix+".json"), "w") as file:
+        with open(os.path.join(outdir,kid+".json"), "w") as file:
             json.dump(a, file, indent=4)
