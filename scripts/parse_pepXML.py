@@ -71,7 +71,7 @@ def get_index(peptide, sequence, loc):
         #filter out locs that are 0/-1
         sites = dict()
         for m in loc:
-            if int(m["position"])>0:
+            if int(m["position"])>0 and sequence[int(m["position"])] in aa_mass:
                 shift_size = int(m['mass']) - aa_mass[sequence[int(m['position'])]]
                 if shift_size in ptm_mass:
                     sites[i + int(m["position"]) - 1] = ptm_mass[shift_size]
