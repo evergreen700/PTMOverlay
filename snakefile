@@ -4,6 +4,8 @@ import json
 import glob
 import sys
 import requests
+import pandas as pd
+
 
 #---------------CONFIG--------------------
 configfile: "config.yaml"
@@ -38,6 +40,11 @@ if "batch_name" in config:
   BATCH_PREFIX = config["batch_name"]+"_"
 else:
   BATCH_PREFIX = ""
+
+#---------STRAIN/ASSEMBLY MATCHUP---------------
+org_table = pd.read_csv("index_umb_taxa_gca.tsv", sep="\t", index_col="Inde\
+x")
+strain_to_assembly = dict(zip(org_table["UMB"],org_table["Assembly"]))
 
 #----------HANDLING FOR "ALL" KO'S----------
 kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
@@ -172,17 +179,28 @@ rule muscle:
     {PYTHON} scripts/runMUSCLE.py {input.fasta} {output.alignment}
     '''
 
-rule extract_ptms:
+rule gather_ptms:
   input:
-    pepXML_dir=ancient(PEPXML_DIR+'/{ptm_type}'),
-    mass='scripts/ptm_mass.yaml'
+    ptm_jsons=expand(PTM_DIR+'/{strain_name}_{{ko}}_{{ptm_type}}.json', strain_name=strain_to_assembly.keys())
   output:
-    ptms=expand(PTM_DIR+'/{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
+    ptm_json=PTM_DIR+'/{ko}_{ptm_type}.json'
+  shell:
+    '''
+    {PYTHON} scripts/gather_ptm.py {input.ptm_jsons} {output.ptm_json}
+    '''
+
+rule split_ptms:
+  input:
+    pepXML_dir=ancient(PEPXML_DIR+'/{ptm_type}/'),
+    fasta=ancient(expand(PROTEOMES+'/{proteome_name}.faa', proteome_name=lambda w: strain_to_assembly[w.strain_name])),
+    mass=ancient('scripts/ptm_mass.yaml')
+  output:
+    ptms=expand(PTM_DIR+'/{{strain_name}}_{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
   resources:
     mem_gb=3
   shell:
     '''
-    {PYTHON} scripts/parse_pepXML.py {input.pepXML_dir} {PROTEOMES} {input.mass} {SPECIES_INFO} {PTM_DIR} {wildcards.ptm_type}
+    {PYTHON} scripts/parse_pepXML.py {input.pepXML_dir} {input.fasta} {input.mass} {SPECIES_INFO} {PTM_DIR} {wildcards.strain_name} {wildcards.ptm_type}
     '''
 
 rule group_orthologs:
