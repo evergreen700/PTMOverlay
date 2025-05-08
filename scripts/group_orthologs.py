@@ -18,7 +18,7 @@ with open(SPECIES_INFO, mode="r", newline="") as file:
     headers = next(reader)
     for row in reader:
         key = row[3]
-        value = (row[2])
+        value = (row[1],row[2])
         GCA_to_species[key] = value
 
 for p in proteomes:
@@ -49,7 +49,7 @@ for p in proteomes:
             covered_kos.add(ko)
             outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"w")
          
-        line = ">"+pid+", "+assembly+", "+GCA_to_species[assembly]+"\n"
+        line = ">"+pid+", "+", ".join(GCA_to_species[assembly])+", "+assembly+"\n"
 
         outFile.write(line)
         line = inFile.readline()
@@ -68,7 +68,7 @@ for p in proteomes:
                 else:
                     covered_kos.add(ko)
                     outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"w")
-                line = ">"+pid+", "+assembly+", "+GCA_to_species[assembly]+"\n"
+                line = ">"+pid+", "+", ".join(GCA_to_species[assembly])+", "+assembly+"\n"
             outFile.write(line)
             line = inFile.readline()
         outFile.close()

@@ -45,12 +45,13 @@ else:
 org_table = pd.read_csv("index_umb_taxa_gca.tsv", sep="\t", index_col="Inde\
 x")
 strain_to_assembly = dict(zip(org_table["UMB"],org_table["Assembly"]))
+strain_to_species = dict(zip(org_table["UMB"],org_table["Taxa"]))
 
 #----------HANDLING FOR "ALL" KO'S----------
 kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
 ORTHOLOGS = dict()
 CUTOFF = 2 if "ortholog_sequence_cutoff" not in config else max(config["ortholog_sequence_cutoff"],2)
-MIN_PTMS_CUTOFF = CUTOFF if "min_ptms" not in config else config["min_ptms"]
+MIN_PTMS_CUTOFF = .2 if "min_ptms_freq" not in config else config["min_ptms_freq"]
 for k in kofiles:
   with open(k,"r") as inFile:
     for l in inFile:
@@ -181,12 +182,12 @@ rule muscle:
 
 rule gather_ptms:
   input:
-    ptm_jsons=expand(PTM_DIR+'/{strain_name}_{{ko}}_{{ptm_type}}.json', strain_name=strain_to_assembly.keys())
+    ptm_jsons=expand(PTM_DIR+'/{strain_name}_{{ptm_type}}.json', strain_name=strain_to_assembly.keys())
   output:
     ptm_json=PTM_DIR+'/{ko}_{ptm_type}.json'
   shell:
     '''
-    {PYTHON} scripts/gather_ptm.py {input.ptm_jsons} {output.ptm_json}
+    {PYTHON} scripts/gather_ptm.py {input.ptm_jsons} {wildcards.ko} {output.ptm_json}
     '''
 
 rule split_ptms:
@@ -195,12 +196,14 @@ rule split_ptms:
     fasta=ancient(expand(PROTEOMES+'/{proteome_name}.faa', proteome_name=lambda w: strain_to_assembly[w.strain_name])),
     mass=ancient('scripts/ptm_mass.yaml')
   output:
-    ptms=expand(PTM_DIR+'/{{strain_name}}_{ko}_{{ptm_type}}.json', ko=ORTHOLOGS)
+    ptms=PTM_DIR+'/{strain_name}_{ptm_type}.json'
+  params:
+    species=lambda w: strain_to_species[w.strain_name],
   resources:
     mem_gb=3
   shell:
     '''
-    {PYTHON} scripts/parse_pepXML.py {input.pepXML_dir} {input.fasta} {input.mass} {SPECIES_INFO} {PTM_DIR} {wildcards.strain_name} {wildcards.ptm_type}
+    {PYTHON} scripts/split_pepXML.py {input.pepXML_dir} {input.fasta} {input.mass} '{params.species}' {PTM_DIR} {wildcards.strain_name} {wildcards.ptm_type}
     '''
 
 rule group_orthologs:

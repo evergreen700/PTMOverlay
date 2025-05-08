@@ -36,8 +36,8 @@ batch_name: Glycolysis
 pathways: #alternative to a list of orthologs
   - ko00010
 
-ortholog_sequence_cutoff: 15 #how many sequences/species that are required to perform alignment. Lowest allowed value is 2
-min_ptms: 15 #min ptms for a cite to be in the filtered csv output. Will default to ortholog_sequence_cutoff.
+ortholog_sequence_cutoff: 2 #15 #how many sequences/species that are required to perform alignment. Lowest allowed value is 2
+min_ptms_freq: .2 #min ptms for a cite to be in the filtered csv output. Will default to ortholog_sequence_cutoff.
 
 row_length: 100 #the length of each row in the final ortholog reports
 select_intervals: #specifc intervals to include in final ortholog reports, inclusive. Default is to include everything
