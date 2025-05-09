@@ -40,7 +40,7 @@ We have not extensively tested all the packages this tool requires. These are th
 - ncbi-taxonomist: 1.2.1
 
 ### MUSCLE Executable
-In the executables folder of the repository, check to see if a MUSCLE executable that works with your operating system is present. If not, go to this website and download the correct executable.
+In the executables directory of the repository, check to see if a MUSCLE executable that works with your operating system is present. If not, go to this website and download the correct executable and place it in in executables directory.
 
 https://drive5.com/muscle/downloads_v3.htm
 
