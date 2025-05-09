@@ -39,7 +39,7 @@ We have not extensively tested all the packages this tool requires. These are th
 - snakemake: 9.1.1
 - ncbi-taxonomist: 1.2.1
 
-## MUSCLE Executable
+### MUSCLE Executable
 In the executables folder of the repository, check to see if a MUSCLE executable that works with your operating system is present. If not, go to this website and download the correct executable.
 
 https://drive5.com/muscle/downloads_v3.htm
