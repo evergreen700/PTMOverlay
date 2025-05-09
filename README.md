@@ -39,6 +39,22 @@ We have not extensively tested all the packages this tool requires. These are th
 - snakemake: 9.1.1
 - ncbi-taxonomist: 1.2.1
 
+## MUSCLE Executable
+In the executables folder of the repository, check to see if a MUSCLE executable that works with your operating system is present. If not, go to this website and download the correct executable.
+
+https://drive5.com/muscle/downloads_v3.htm
+
+Then edit the runMUSCLE.py file accordingly.
+
+If on Windows:
+- Edit line 13 to point to the correct executable
+
+If on Linux:
+- Edit lines 16, 17 or 19, 20 depending on your machine
+  
+If on Mac: 
+- Edit line 23 or 25 depending on your machine
+
 ## Execution
 To run the workflow, place proteomes and kegg annotation files in the folder designated as `proteome_dir` in the config file. Place .pepXML files in folders sorted by ptm type within the folder designated as `pepXML_dir` in the config file. Below is an example of the file structure:
 ```
