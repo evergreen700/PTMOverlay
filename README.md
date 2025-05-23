@@ -21,6 +21,8 @@ docker build -t ptm-overlay .
 
 ### Native
 
+Create a conda environment. This website gives a step-by-step guide: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+
 Install dependencies using pip:
 ```
 pip install matplotlib pandas pyteomics biopython lxml snakemake ncbi-taxonomist svgutils six
