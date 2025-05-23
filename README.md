@@ -21,7 +21,7 @@ docker build -t ptm-overlay .
 
 ### Native
 
-Create a conda environment. All code should be run inside the environment you create. This website gives a step-by-step guide: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+Create a conda environment. All code should be run inside the environment you create. Instructions for creating a new conda environment can be found here: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 
 Install dependencies using pip:
 ```
