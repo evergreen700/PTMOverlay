@@ -21,7 +21,7 @@ ptm_types:
 
 ### alignment report parameters ###
 
-batch_name: Glycolysis
+batch_name: PentosePhosphate #Glycolysis
 
 #orthologs_to_align: #list of kegg ID's (eg, K01689) or "all"
 #   - K01647
@@ -34,7 +34,7 @@ batch_name: Glycolysis
 #   - K00116
 
 pathways: #alternative to a list of orthologs
-  - ko00010
+  - ko00030
 
 ortholog_sequence_cutoff: 2 #15 #how many sequences/species that are required to perform alignment. Lowest allowed value is 2
 min_ptms_freq: .2 #min ptms for a cite to be in the filtered csv output. Will default to ortholog_sequence_cutoff.

@@ -108,7 +108,7 @@ rule preAlignBenchmark:
     html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     pdfs=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
-    svg=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.svg',
+#    svg=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.svg',
     taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
 
 rule plotCSV:
@@ -252,13 +252,30 @@ rule generate_tree:
     {PYTHON} scripts/generateTree.py {input.html} {input.fasta} {input.nh} {input.json} {input.tsv} {output.pdf}
     '''
 
-rule download_example_data:
+rule download_proteome_ftp:
+  input:
+    cred="ftp_credentials.yaml"
   output:
-    zip="mass_spec.zip"
+    proteome=directory(PROTEOMES)
+  params:
+    path="sequence/FASTA_Files"
   shell:
     '''
-    {PYTHON} scripts/download_example_data.py
+    {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {output.proteome}
     '''
+
+rule download_mass_spec_ftp:
+  input:
+    cred="ftp_credentials.yaml"
+  output:
+    proteome=directory(PEPXML_DIR)
+  params:
+    path="other/pepXML_Files"
+  shell:
+    '''
+    {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {output.proteome}
+    '''
+
 
 rule extract_example_data:
   output:
