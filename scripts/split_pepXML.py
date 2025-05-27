@@ -31,14 +31,7 @@ with open(ptm_info, "r") as inFile:
 with open("config.yaml") as inFile:
     ptm_mass = yaml.load(inFile, Loader=yaml.CLoader)["ptm_types"]
 
-if len(sys.argv) > 7:
-    outsuffix = "_"+sys.argv[7]
-    shift_size=ptm_mass[sys.argv[7]]
-else:
-    outsuffix = ""
-    shift_size = 0
-
-
+shift_sizes = {j:i for i,j in ptm_mass.items()}
 aa_mass = aa_mass["base"]
 
 #load the full protein sequences into memory
@@ -56,7 +49,15 @@ def get_index(peptide, sequence, loc):
     try:
         i = sequence.index(peptide)
         #filter out locs that are 0/-1
-        return i, i+len(peptide), [i + int(m["position"]) - 1 for m in loc if int(m["position"])>0 and aa_mass[sequence[int(m['position'])]]+shift_size == int(m['mass'])]
+        mods = []
+        for l in loc:
+            pos = int(l["position"]) - 1
+            shift_size = int(l['mass']) - aa_mass[sequence[int(l['position'])]]
+            mod_type = shift_sizes.get(mod_type,"")
+            if pos >= 0 and mod_type:
+                mods.append((mod_type,pos))
+
+        return i, i+len(peptide), mods #[i + int(m["position"]) - 1 for m in loc if int(m["position"])>0 and aa_mass[sequence[int(m['position'])]]+shift_size == int(m['mass'])]
     except ValueError:
         return None
 
@@ -80,9 +81,9 @@ def process_file(files):
             if len(pair) == 2: # and pair[1] in selection:
                 orthologs[pair[0]]=pair[1]
                 if pair[1] not in ortho_org:
-                    ortho_org[pair[1]]={pair[0]+", "+entry_suffix: {'read_start':dict(),'read_end':dict(),'mod_site':set()}}
+                    ortho_org[pair[1]]={pair[0]+", "+entry_suffix: {'read_start':dict(),'read_end':dict(),'mod_sites':{p:set() for p in ptm_mass.keys()}}}
                 else:
-                    ortho_org[pair[1]][pair[0]+", "+entry_suffix] = {'read_start':dict(),'read_end':dict(),'mod_site':set()}
+                    ortho_org[pair[1]][pair[0]+", "+entry_suffix] = {'read_start':dict(),'read_end':dict(),'mod_sites':{p:set() for p in ptm_mass.keys()}}}
     try:
         for file in files:
             print(file)
@@ -99,7 +100,8 @@ def process_file(files):
                     key = protein+", "+entry_suffix
                     ortho_org[o][key]['read_start'][startIdx]=ortho_org[o][key]['read_start'].get(startIdx,0)+1
                     ortho_org[o][key]['read_end'][endIdx]=ortho_org[o][key]['read_end'].get(endIdx,0)+1
-                    ortho_org[o][key]['mod_site'].update(mod_indices)
+                    for p, l in mod_indices:
+                        ortho_org[o][key]['mod_site'][p].add(l)
     except Exception as e:
         print(f"Error processing {file}: {e}")
 
@@ -110,6 +112,6 @@ if __name__ == "__main__":
     for kid in results.keys():
         a = results[kid]
         for i in a.keys():
-            a[i]["mod_site"] = list(a[i]["mod_site"])
+            a[i]["mod_site"] = {p:list(sites) for p,sites in a[i]["mod_site"].items()}
     with open(os.path.join(outdir,strain+outsuffix+".json"), "w") as file:
         json.dump(results, file, indent=4)
