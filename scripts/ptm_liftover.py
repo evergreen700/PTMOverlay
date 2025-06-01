@@ -23,27 +23,29 @@ outPTM = dict()
 for item,entries in inPTM.items():
     starts = {int(i):j for i,j in entries["read_start"].items()}
     ends = {int(i):j for i,j in entries["read_end"].items()}
-    ptms = entries["mod_site"]
+    ptms = entries["mod_sites"]
     seq = "".join(inSeq[item])
     seq_progress=-1
-    ptm_iterator = 0
+    ptm_iterators = {k:0 for k in ptms.keys()} 
     lo_starts = dict()
     lo_ends = dict()
-    lo_ptms = []
-    ptms.sort()
+    lo_ptms = {k:[] for k in ptms.keys()}
+    for i in ptms.keys():
+        ptms[i].sort()
     for i in range(len(seq)):
         if seq[i] != "-":
             seq_progress+=1
-            if ptm_iterator < len(ptms) and seq_progress == ptms[ptm_iterator]:
-                lo_ptms.append(i)
-                ptm_iterator+=1
+            for p in ptms.keys():
+                if ptm_iterators[p] < len(ptms[p]) and seq_progress == ptms[p][ptm_iterators[p]]:
+                    lo_ptms[p].append(i)
+                    ptm_iterators[p]+=1
             if seq_progress in starts:
                 lo_starts[i] = starts[seq_progress]
             if seq_progress in ends:
                 lo_ends[i] = ends[seq_progress]
             if len(lo_ends) == len(ends):
                 break
-    outPTM[item] = {"read_start":lo_starts,"read_end":lo_ends,"mod_site":lo_ptms}
+    outPTM[item] = {"read_start":lo_starts,"read_end":lo_ends,"mod_sites":lo_ptms}
 
 with open(outPTMFile, "w") as outFile:
     json.dump(outPTM, outFile, indent=4)

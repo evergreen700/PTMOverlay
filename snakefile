@@ -182,9 +182,9 @@ rule muscle:
 
 rule gather_ptms:
   input:
-    ptm_jsons=expand(PTM_DIR+'/{strain_name}_{{ptm_type}}.json', strain_name=strain_to_assembly.keys())
+    ptm_jsons=expand(PTM_DIR+'/{strain_name}.json', strain_name=strain_to_assembly.keys())
   output:
-    ptm_json=PTM_DIR+'/{ko}_{ptm_type}.json'
+    ptm_json=PTM_DIR+'/{ko}.json'
   shell:
     '''
     {PYTHON} scripts/gather_ptm.py {input.ptm_jsons} {wildcards.ko} {output.ptm_json}

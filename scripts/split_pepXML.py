@@ -53,7 +53,7 @@ def get_index(peptide, sequence, loc):
         for l in loc:
             pos = int(l["position"]) - 1
             shift_size = int(l['mass']) - aa_mass[sequence[int(l['position'])]]
-            mod_type = shift_sizes.get(mod_type,"")
+            mod_type = shift_sizes.get(shift_size,"")
             if pos >= 0 and mod_type:
                 mods.append((mod_type,pos))
 
@@ -70,7 +70,7 @@ def search_peptide(peptide, protein_id, locations):
 
 def process_file(files):
     """Extracts unique proteins and site indexes from a .pepXML file."""
-    ka = in_fasta.removesuffix(".faa")+".kegg.txt"
+    ka = os.path.splitext(in_fasta)[0]+".kegg.txt"
     orthologs = dict()
     ortho_org = dict()
     ## test vals
@@ -83,7 +83,7 @@ def process_file(files):
                 if pair[1] not in ortho_org:
                     ortho_org[pair[1]]={pair[0]+", "+entry_suffix: {'read_start':dict(),'read_end':dict(),'mod_sites':{p:set() for p in ptm_mass.keys()}}}
                 else:
-                    ortho_org[pair[1]][pair[0]+", "+entry_suffix] = {'read_start':dict(),'read_end':dict(),'mod_sites':{p:set() for p in ptm_mass.keys()}}}
+                    ortho_org[pair[1]][pair[0]+", "+entry_suffix] = {'read_start':dict(),'read_end':dict(),'mod_sites':{p:set() for p in ptm_mass.keys()}}
     try:
         for file in files:
             print(file)
@@ -101,7 +101,7 @@ def process_file(files):
                     ortho_org[o][key]['read_start'][startIdx]=ortho_org[o][key]['read_start'].get(startIdx,0)+1
                     ortho_org[o][key]['read_end'][endIdx]=ortho_org[o][key]['read_end'].get(endIdx,0)+1
                     for p, l in mod_indices:
-                        ortho_org[o][key]['mod_site'][p].add(l)
+                        ortho_org[o][key]['mod_sites'][p].add(l)
     except Exception as e:
         print(f"Error processing {file}: {e}")
 
@@ -112,6 +112,6 @@ if __name__ == "__main__":
     for kid in results.keys():
         a = results[kid]
         for i in a.keys():
-            a[i]["mod_site"] = {p:list(sites) for p,sites in a[i]["mod_site"].items()}
-    with open(os.path.join(outdir,strain+outsuffix+".json"), "w") as file:
+            a[i]["mod_sites"] = {p:list(sites) for p,sites in a[i]["mod_sites"].items()}
+    with open(os.path.join(outdir,strain+".json"), "w") as file:
         json.dump(results, file, indent=4)
