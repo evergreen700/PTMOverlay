@@ -7,8 +7,7 @@ import yaml
 inFile = sys.argv[1]
 outFile = sys.argv[2]
 TITLE = sys.argv[3]
-#window = int(sys.argv[3])
-inPTM = sys.argv[4:]
+inPTMs = sys.argv[4]
 
 #these are the colors assigned to the PTMs in the order they are presented in.
 colors=["#fc1c03","#0324fc","#a903fc","#03fc0f","#fc03e7","#b59a4a"]
@@ -50,35 +49,15 @@ starts = dict()
 ends = dict()
 
 #read in PTM files
-for f in inPTM:
-    mod = os.path.basename(f).split("_")[1]
-    ptm_types.append(mod)
-    with open(f,"r") as readIn:
-
-        #merge ptm sites, read starts, and read ends into dictionaries
-        p = json.load(readIn)
-        for k in p.keys():
-            if k not in ptms:
-                ptms[k] = dict()
-                starts[k] = dict()
-                ends[k] = dict()
-
-            #store ptm sites
-            ptms[k][mod] = p[k]['mod_site']
-
-            #store read starts
-            for i,j in p[k]['read_start'].items():
-                ii = int(i)
-                if ii not in starts[k]:
-                    starts[k][ii] = 0
-                starts[k][ii]+=j
-
-            #store read ends
-            for i,j in p[k]['read_end'].items():
-                ii = int(i)
-                if ii not in ends[k]:
-                    ends[k][ii] = 0
-                ends[k][ii]+=j
+with open(inPTMs,"r") as readIn:
+    #merge ptm sites, read starts, and read ends into dictionaries
+    p = json.load(readIn)
+    for k in p.keys():
+        if k not in ptms:
+            ptms[k] = p[k]["mod_sites"]
+            ptm_types = list(ptms[k].keys())
+            starts[k] = p[k]["read_start"]
+            ends[k] = p[k]["read_end"]
 
 
 with open(outFile, "w") as writer:

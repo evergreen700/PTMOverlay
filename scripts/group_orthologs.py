@@ -8,7 +8,7 @@ ORTHOLOG = sys.argv[2]
 SPECIES_INFO = sys.argv[3]
 PRE_ALIGN_PATH = sys.argv[4]
 covered_kos = set()
-proteomes = glob.glob(os.path.join(PROTEOME_PATH,"*.faa"))
+proteomes = []
 
 os.makedirs(PRE_ALIGN_PATH, exist_ok=True)
 
@@ -17,13 +17,15 @@ with open(SPECIES_INFO, mode="r", newline="") as file:
     reader = csv.reader(file, delimiter="\t")
     headers = next(reader)
     for row in reader:
-        key = row[3]
+        key = os.path.splitext(row[3])[0]
         value = (row[1],row[2])
         GCA_to_species[key] = value
+        proteomes.append(os.path.join(PROTEOME_PATH, row[3]))
 
 for p in proteomes:
-    ka = p[:-4]+".kegg.txt"
-    assembly = os.path.basename(p)[:-4]
+    ka = os.path.splitext(p)[0]+".kegg.txt"
+    print(p,ka)
+    assembly = os.path.splitext(os.path.basename(p))[0]
     orthologs = dict()
     with open(ka,"r") as inFile:
         for l in inFile:

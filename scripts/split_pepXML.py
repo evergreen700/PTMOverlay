@@ -51,7 +51,7 @@ def get_index(peptide, sequence, loc):
         #filter out locs that are 0/-1
         mods = []
         for l in loc:
-            pos = int(l["position"]) - 1
+            pos = i + int(l["position"]) - 1
             shift_size = int(l['mass']) - aa_mass[sequence[int(l['position'])]]
             mod_type = shift_sizes.get(shift_size,"")
             if pos >= 0 and mod_type:
@@ -113,5 +113,5 @@ if __name__ == "__main__":
         a = results[kid]
         for i in a.keys():
             a[i]["mod_sites"] = {p:list(sites) for p,sites in a[i]["mod_sites"].items()}
-    with open(os.path.join(outdir,strain+".json"), "w") as file:
+    with open(os.path.join(outdir,strain+"__strain.json"), "w") as file:
         json.dump(results, file, indent=4)

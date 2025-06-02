@@ -133,7 +133,7 @@ rule filterCSV:
 
 rule makeBigCSV:
   input:
-    ptm=expand(PTM_DIR+'/{k}_{p}_aligned.json',k=ORTHOLOGS,p=PTM_TYPES),
+    ptm=expand(PTM_DIR+'/{k}__aligned.json',k=ORTHOLOGS),
     faa=expand(RAW_ALIGNMENTS+'/{k}.faa',k=ORTHOLOGS)
   output:
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'unfiltered_ptms.csv'
@@ -149,9 +149,9 @@ rule makeBigCSV:
 rule alignPTMs:
   input:
     fasta=RAW_ALIGNMENTS+'/{ko}.faa',
-    ptms=PTM_DIR+'/{ko}_{ptm_type}.json'
+    ptms=PTM_DIR+'/{ko}__ortholog.json'
   output:
-    ptms=PTM_DIR+'/{ko}_{ptm_type}_aligned.json'
+    ptms=PTM_DIR+'/{ko}__aligned.json'
   shell:
     '''
     {PYTHON} scripts/ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
@@ -160,14 +160,14 @@ rule alignPTMs:
 rule fastaAnnotate:
   input:
     alignment=RAW_ALIGNMENTS+'/{ko}.faa',
-    ptms=expand(PTM_DIR+'/{{ko}}_{pt}_aligned.json', pt=lambda w: w.ptm_types.split("_"))
+    ptm=PTM_DIR+'/{ko}__aligned.json'
   output:
     html=FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{symbol}__{name}.html'
   params:
     title=lambda w: FULLNAMES[w.ko]
   shell:
     '''
-    {PYTHON} scripts/reFormatFasta.py {input.alignment} {output.html} '{params.title}' {input.ptms}
+    {PYTHON} scripts/reFormatFasta.py {input.alignment} {output.html} '{params.title}' {input.ptm}
     '''
 
 rule muscle:
@@ -182,9 +182,9 @@ rule muscle:
 
 rule gather_ptms:
   input:
-    ptm_jsons=expand(PTM_DIR+'/{strain_name}.json', strain_name=strain_to_assembly.keys())
+    ptm_jsons=expand(PTM_DIR+'/{strain_name}__strain.json', strain_name=strain_to_assembly.keys())
   output:
-    ptm_json=PTM_DIR+'/{ko}.json'
+    ptm_json=PTM_DIR+'/{ko}__ortholog.json'
   shell:
     '''
     {PYTHON} scripts/gather_ptm.py {input.ptm_jsons} {wildcards.ko} {output.ptm_json}
@@ -192,18 +192,18 @@ rule gather_ptms:
 
 rule split_ptms:
   input:
-    pepXML_dir=ancient(PEPXML_DIR+'/{ptm_type}/'),
-    fasta=ancient(expand(PROTEOMES+'/{proteome_name}.faa', proteome_name=lambda w: strain_to_assembly[w.strain_name])),
+    pepXML_dir=ancient(PEPXML_DIR),
+    fasta=ancient(expand(PROTEOMES+'/{proteome_name}', proteome_name=lambda w: strain_to_assembly[w.strain_name])),
     mass=ancient('scripts/ptm_mass.yaml')
   output:
-    ptms=PTM_DIR+'/{strain_name}_{ptm_type}.json'
+    ptms=PTM_DIR+'/{strain_name}__strain.json'
   params:
     species=lambda w: strain_to_species[w.strain_name],
   resources:
     mem_gb=3
   shell:
     '''
-    {PYTHON} scripts/split_pepXML.py {input.pepXML_dir} {input.fasta} {input.mass} '{params.species}' {PTM_DIR} {wildcards.strain_name} {wildcards.ptm_type}
+    {PYTHON} scripts/split_pepXML.py {input.pepXML_dir} {input.fasta} {input.mass} '{params.species}' {PTM_DIR} {wildcards.strain_name}
     '''
 
 rule group_orthologs:

@@ -28,20 +28,20 @@ for k in kids:
     inSeq = {i:list("".join(j)) for i,j in inSeq.items()}
     conSeq = "".join(pd.DataFrame(inSeq).T.mode().iloc[0])
     ptm_mask_list = []
+    inPTMFile = inPTMDir+"/"+k+"__aligned.json"
+    with open(inPTMFile,"r") as inFile:
+        ptm_sites = json.load(inFile)
     for p in ptms:
-        inPTMFile = inPTMDir+"/"+k+"_"+p+"_aligned.json"
-        with open(inPTMFile,"r") as inFile:
-            ptm_sites = json.load(inFile)
-
+        sub_sites = dict()
         for i in ptm_sites.keys():
-            locs = ptm_sites[i]["mod_site"]
+            locs = ptm_sites[i]["mod_sites"][p]
             sites = np.zeros(len(conSeq))
             sites[locs] = 1
-            ptm_sites[i] = sites
+            sub_sites[i] = sites
 
-        ptm_sites = pd.DataFrame(ptm_sites).T
-        ptm_sites["org"] = ptm_sites.index.map(lambda x: x.split(", ", maxsplit=1)[1])
-        ptm_mask = ptm_sites.groupby("org").sum() > 0
+        sub_sites = pd.DataFrame(sub_sites).T
+        sub_sites["org"] = sub_sites.index.map(lambda x: x.split(", ", maxsplit=1)[1])
+        ptm_mask = sub_sites.groupby("org").sum() > 0
         ptm_mask_list.append(ptm_mask)
     mods = pd.DataFrame(np.full(ptm_mask_list[0].shape, ""), index=ptm_mask_list[0].index)
     for i in range(len(ptms)-1,-1,-1):
