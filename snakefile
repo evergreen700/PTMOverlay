@@ -192,7 +192,7 @@ rule gather_ptms:
 
 rule split_ptms:
   input:
-    pepXML_dir=ancient(PEPXML_DIR),
+    pepXML_dir=ancient(PEPXML_DIR+"/{strain_name}"),
     fasta=ancient(expand(PROTEOMES+'/{proteome_name}', proteome_name=lambda w: strain_to_assembly[w.strain_name])),
     mass=ancient('scripts/ptm_mass.yaml')
   output:
@@ -256,9 +256,9 @@ rule download_proteome_ftp:
   input:
     cred="ftp_credentials.yaml"
   output:
-    proteome=directory(PROTEOMES)
+    proteome=PROTEOMES+"/{proteome}"
   params:
-    path="sequence/FASTA_Files"
+    path="sequence/FASTA_Files/{proteome}"
   shell:
     '''
     {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {output.proteome}
@@ -268,9 +268,9 @@ rule download_mass_spec_ftp:
   input:
     cred="ftp_credentials.yaml"
   output:
-    proteome=directory(PEPXML_DIR)
+    proteome=directory(PEPXML_DIR+"/{strain}")
   params:
-    path="other/pepXML_Files"
+    path="other/pepXML_Files/*{strain}*"
   shell:
     '''
     {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {output.proteome}
