@@ -12,4 +12,10 @@ with open(credentials, "r") as inFile:
 
 os.makedirs(outDir, exist_ok=True)
 
-subprocess.run(["wget","--mirror","--continue","--no-host-directories","-nd","--user="+cred["username"],"--password="+cred["password"], cred["address"]+"/"+location],cwd=outDir)
+secure_flags = []
+if "username" in cred:
+    secure_flags.append("--user="+cred["username"])
+if "password" in cred:
+    secure_flags.append("--password="+cred["password"])
+
+subprocess.run(["wget","--mirror","--continue","--no-host-directories","-nd"]+secure_flags+[cred["address"]+"/"+location],cwd=outDir)
