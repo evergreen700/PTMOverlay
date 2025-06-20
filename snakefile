@@ -49,6 +49,7 @@ strain_to_species = dict(zip(org_table["UMB"],org_table["Taxa"]))
 
 #----------HANDLING FOR "ALL" KO'S----------
 kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
+kofiles = [PROTEOMES+"/"+os.path.splitext(i)[0] + ".kegg.txt" for i in org_table["Assembly"]]
 ORTHOLOGS = dict()
 CUTOFF = 2 if "ortholog_sequence_cutoff" not in config else max(config["ortholog_sequence_cutoff"],2)
 MIN_PTMS_CUTOFF = .2 if "min_ptms_freq" not in config else config["min_ptms_freq"]
@@ -109,7 +110,7 @@ rule preAlignBenchmark:
     pdfs=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
 #    svg=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.svg',
-    taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
+#    taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
 
 rule plotCSV:
   input:
@@ -207,6 +208,8 @@ rule split_ptms:
     '''
 
 rule group_orthologs:
+  input:
+    fastas=expand(PROTEOMES+"/{assembly}", assembly=org_table["Assembly"])
   output:
     fastas=PRE_ALIGN_FASTAS+'/{ko}.faa'
   shell:
@@ -261,7 +264,7 @@ rule download_proteome_ftp:
     path="sequence/FASTA_Files/{proteome}"
   shell:
     '''
-    {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {output.proteome}
+    {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {PROTEOMES}
     '''
 
 rule download_mass_spec_ftp:
