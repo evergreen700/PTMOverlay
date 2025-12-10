@@ -17,7 +17,7 @@ ptm_types:
   Carbamyl: 43
   MonoMethyl: 14
   DiMethyl: 28
-  TriMethyl: 42
+#  TriMethyl: 42
 
 ### alignment report parameters ###
 

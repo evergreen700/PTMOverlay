@@ -108,6 +108,7 @@ rule preAlignBenchmark:
   input:
     html=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.html',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
     pdfs=expand(FINAL_ALIGNMENTS+'/'+"_".join(PTM_TYPES)+'/{ko}__{symbol}__{name}.tree.pdf',zip, ko=ORTHOLOGS, symbol=SYMBOLS, name=NAMES),
+    ptm_json=FINAL_ALIGNMENTS+'/shift_counts.txt',
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.csv',
 #    svg=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'filtered_ptms.svg',
 #    taxonomic_tree=FINAL_ALIGNMENTS+'/Taxonomy_Tree.pdf'
@@ -191,6 +192,16 @@ rule gather_ptms:
     {PYTHON} scripts/gather_ptm.py {input.ptm_jsons} {wildcards.ko} {output.ptm_json}
     '''
 
+rule gather_counts:
+  input:
+    ptm_jsons=expand(PTM_DIR+'/{strain_name}__strain__unmatched.json', strain_name=strain_to_assembly.keys())
+  output:
+    ptm_json=FINAL_ALIGNMENTS+'/shift_counts.txt'
+  shell:
+    '''
+    {PYTHON} scripts/gather_counts.py {input.ptm_jsons} {output.ptm_json}
+    '''
+
 rule split_ptms:
   input:
     pepXML_dir=ancient(PEPXML_DIR+"/{strain_name}"),
@@ -205,6 +216,22 @@ rule split_ptms:
   shell:
     '''
     {PYTHON} scripts/split_pepXML.py {input.pepXML_dir} {input.fasta} {input.mass} '{params.species}' {PTM_DIR} {wildcards.strain_name}
+    '''
+
+rule count_ptms:
+  input:
+    pepXML_dir=ancient(PEPXML_DIR+"/{strain_name}"),
+    fasta=ancient(expand(PROTEOMES+'/{proteome_name}', proteome_name=lambda w: strain_to_assembly[w.strain_name])),
+    mass=ancient('scripts/ptm_mass.yaml')
+  output:
+    ptms=PTM_DIR+'/{strain_name}__strain__unmatched.json'
+  params:
+    species=lambda w: strain_to_species[w.strain_name],
+  resources:
+    mem_gb=3
+  shell:
+    '''
+    {PYTHON} scripts/count_pepXML.py {input.pepXML_dir} {input.fasta} {input.mass} '{params.species}' {PTM_DIR} {wildcards.strain_name}
     '''
 
 rule group_orthologs:
