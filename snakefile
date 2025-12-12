@@ -4,6 +4,7 @@ import json
 import glob
 import sys
 import requests
+import pandas as pd
 
 #---------------CONFIG--------------------
 configfile: "config.yaml"
@@ -26,6 +27,12 @@ PTM_TYPES=config["ptm_types"].keys()
 PROTEOMES=config["proteome_dir"]
 PEPXML_DIR=config["pepXML_dir"]
 SPECIES_INFO=config["species_info"]
+
+#----------ORGANISM TABLE---------------
+org_table = pd.read_csv("index_umb_taxa_gca.tsv", sep="\t", index_col="Inde\
+x")
+strain_to_assembly = dict(zip(org_table["UMB"],org_table["Assembly"]))
+strain_to_species = dict(zip(org_table["UMB"],org_table["Taxa"]))
 
 FINAL_ALIGNMENTS=config["final_alignment_dir"]
 
@@ -186,6 +193,8 @@ rule extract_ptms:
     '''
 
 rule group_orthologs:
+  input:
+    fastas=expand(PROTEOMES+"/{assembly}.faa", assembly=org_table["Assembly"])
   output:
     fastas=PRE_ALIGN_FASTAS+'/{ko}.faa'
   shell:
@@ -231,28 +240,34 @@ rule generate_tree:
     {PYTHON} scripts/generateTree.py {input.html} {input.fasta} {input.nh} {input.json} {input.tsv} {output.pdf}
     '''
 
-rule download_example_data:
+rule download_sequence_ftp:
+  resources:
+    downloads=1
+  input:
+    cred=ancient("ftp_credentials.yaml")
   output:
-    zip="mass_spec.zip"
+    proteome=PROTEOMES+"/{proteome}"
+  params:
+    path="outgoing/PTM_tool_Youngki/Sequences/{proteome}.fa*"
   shell:
     '''
-    {PYTHON} scripts/download_example_data.py
+    {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {PROTEOMES}
     '''
 
-rule extract_example_data:
-  output:
-    Phospho=directory("mass_spec/Phospho"),
-    Acetyl=directory("mass_spec/Acetyl"),
-    Carbamyl=directory("mass_spec/Carbamyl"),
-    MonoMethyl=directory("mass_spec/MonoMethyl"),
-    DiMethyl=directory("mass_spec/DiMethyl"),
-    TriMethyl=directory("mass_spec/TriMethyl")
+rule download_mass_spec_ftp:
+  resources:
+    downloads=1
   input:
-    zip=ancient("mass_spec.zip")
+    cred=ancient("ftp_credentials.yaml")
+  output:
+    proteome=directory(PEPXML_DIR+"/{ptm_type}")
+  params:
+    path="outgoing/PTM_tool_Youngki/MSdata/*{ptm_type}*"
   shell:
     '''
-    {PYTHON} scripts/extract_example_data.py
+    {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {output.proteome}
     '''
+
 
 ######## Code from Matthew Cloward for generating proteome phylogenies ###############
 
