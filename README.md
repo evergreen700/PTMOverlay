@@ -89,6 +89,11 @@ To run the workflow from the docker image on MacOS or Linux, run
 docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all"
 ```
 
+To reduce errors when downloading example data from ftp, you may want to limit the number of concurrent downloads:
+```
+docker run -v .\:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all --resources='downloads=2'"
+```
+
 ### Native Execution
 To run the workflow on your operating system:
 ```

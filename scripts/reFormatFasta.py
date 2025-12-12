@@ -135,9 +135,9 @@ with open(outFile, "w") as writer:
                         writer.write('<span title> … </span>')
                         writePos+=3
                 if a != "-":
-                    for pt in reversed(ptm_types):
+                    for pt in ptm_types:
                         if idx in ptms[seqIDs[i]][pt]:
-                            c+=pt+' '
+                            c=pt+" "
                 if coverages[seqIDs[i]] > 0:
                     c+='secondaryHighlight'
                 if writing[seqIDs[i]] > 0:
