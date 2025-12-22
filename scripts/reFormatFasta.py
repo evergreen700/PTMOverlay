@@ -3,11 +3,11 @@ import sys
 from collections import deque
 import json
 import yaml
+import re
 
 inFile = sys.argv[1]
 outFile = sys.argv[2]
-TITLE = sys.argv[3]
-#window = int(sys.argv[3])
+TITLE = re.sub("@prime@", "'",sys.argv[3])
 inPTM = sys.argv[4:]
 
 #these are the colors assigned to the PTMs in the order they are presented in.

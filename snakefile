@@ -5,6 +5,7 @@ import glob
 import sys
 import requests
 import pandas as pd
+import re
 
 
 #---------------CONFIG--------------------
@@ -98,6 +99,8 @@ for i in ORTHOLOGS:
   name = re.sub("[\(\),]","", name)
   name = re.sub(" /.*$","", name).strip()
   name = re.sub("[/ :]","_", name)
+  name = re.sub("->","-to-", name)
+  name = re.sub("'","prime", name)
   SYMBOLS.append(symbol)
   NAMES.append(name)
   SN_MATCHUPS[i] = (symbol, name)
@@ -170,7 +173,7 @@ rule fastaAnnotate:
   output:
     html=FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{symbol}__{name}.html'
   params:
-    title=lambda w: FULLNAMES[w.ko]
+    title=lambda w: re.sub("'","@prime@", FULLNAMES[w.ko])
   shell:
     '''
     {PYTHON} scripts/reFormatFasta.py {input.alignment} {output.html} '{params.title}' {input.ptms}
