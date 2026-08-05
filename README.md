@@ -89,9 +89,10 @@ To run the workflow from the docker image on MacOS or Linux, run
 docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all"
 ```
 
-To reduce errors when downloading example data from ftp, you may want to limit the number of concurrent downloads:
+The ftp server rate-limits new connections, so concurrent downloads are capped at 2 by default
+(`profiles/default/config.yaml`, applied automatically). To raise or lower the cap:
 ```
-docker run -v .\:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all --resources='downloads=2'"
+docker run -v .\:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all --resources='downloads=4'"
 ```
 
 ### Native Execution
@@ -102,5 +103,9 @@ snakemake
 ```
 
 ## Example run
-The proteome and kegg annotation files are included as an example. Until we graduate and the files are no longer hosted on BYU Box, the proteome files can be downloaded and installed from Box automatically when running snakemake.
+The kegg annotation files are included as an example. The proteomes and the mass spec search results
+are downloaded automatically from the MassIVE ftp server (see `ftp_credentials.yaml`) when running
+snakemake: `download_sequence_ftp` fetches one `.fasta` per assembly into `proteome/`, and
+`download_mass_spec_ftp` fetches one directory per search into `mass_spec/`, unpacking the `.pepXML`
+files out of the downloaded zip archives. Budget ~10 GB of free disk for the unpacked mass spec data.
 We recommend keeping the config file the way it is for the first run. If there are other orthologs or pathways you want to look at on the 31 species, rerunning with modified parameters will run faster if intermediates are already generated.

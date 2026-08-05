@@ -1,0 +1,5 @@
+# Auto-loaded by snakemake (workflow profile). The MassIVE FTP server rate-limits
+# new connections, so cap concurrent downloads even when running with --cores all.
+# Override on the command line with e.g. --resources downloads=4
+resources:
+  - downloads=2

@@ -8,7 +8,7 @@ ORTHOLOG = sys.argv[2]
 SPECIES_INFO = sys.argv[3]
 PRE_ALIGN_PATH = sys.argv[4]
 covered_kos = set()
-proteomes = glob.glob(os.path.join(PROTEOME_PATH,"*.faa"))
+proteomes = glob.glob(os.path.join(PROTEOME_PATH,"*.fasta"))
 
 os.makedirs(PRE_ALIGN_PATH, exist_ok=True)
 
@@ -22,8 +22,8 @@ with open(SPECIES_INFO, mode="r", newline="") as file:
         GCA_to_species[key] = value
 
 for p in proteomes:
-    ka = p[:-4]+".kegg.txt"
-    assembly = os.path.basename(p)[:-4]
+    ka = p.removesuffix(".fasta")+".kegg.txt"
+    assembly = os.path.basename(p).removesuffix(".fasta")
     orthologs = dict()
     with open(ka,"r") as inFile:
         for l in inFile:
@@ -44,10 +44,10 @@ for p in proteomes:
             continue
         ko = orthologs[pid]
         if ko in covered_kos:
-            outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"a")
+            outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".fasta"),"a")
         else:
             covered_kos.add(ko)
-            outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"w")
+            outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".fasta"),"w")
          
         line = ">"+pid+", "+", ".join(GCA_to_species[assembly])+", "+assembly+"\n"
 
@@ -64,10 +64,10 @@ for p in proteomes:
                     continue
                 ko = orthologs[pid]
                 if ko in covered_kos:
-                    outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"a")
+                    outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".fasta"),"a")
                 else:
                     covered_kos.add(ko)
-                    outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".faa"),"w")
+                    outFile = open(os.path.join(PRE_ALIGN_PATH,ko+".fasta"),"w")
                 line = ">"+pid+", "+", ".join(GCA_to_species[assembly])+", "+assembly+"\n"
             outFile.write(line)
             line = inFile.readline()

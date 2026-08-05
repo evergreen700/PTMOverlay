@@ -1,0 +1,18 @@
+[project]
+name = "ptmoverlay"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "biopython>=1.87",
+    "bs4>=0.0.2",
+    "lxml>=6.1.1",
+    "matplotlib>=3.10.9",
+    "ncbi-taxonomist>=1.2.1",
+    "pandas>=3.0.3",
+    "pyteomics>=5.0",
+    "six>=1.17.0",
+    "snakemake>=9.23.0",
+    "svgutils>=0.3.4",
+]
