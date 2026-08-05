@@ -43,7 +43,7 @@ aa_mass = aa_mass["base"]
 
 #load the full protein sequences into memory
 def load_genebank_sequences():
-    """Preloads all .faa sequences into a nested dictionary {GCA: {protein_id: sequence}} for fast lookups."""
+    """Preloads all .fasta sequences into a nested dictionary {GCA: {protein_id: sequence}} for fast lookups."""
     genebank_dict = dict()
     for record in SeqIO.parse(in_fasta, "fasta"):
         genebank_dict[record.id] = str(record.seq)
@@ -69,7 +69,7 @@ def search_peptide(peptide, protein_id, locations):
 
 def process_file(files):
     """Extracts unique proteins and site indexes from a .pepXML file."""
-    ka = in_fasta.removesuffix(".faa")+".kegg.txt"
+    ka = in_fasta.removesuffix(".fasta")+".kegg.txt"
     orthologs = dict()
     ortho_org = dict()
     ## test vals

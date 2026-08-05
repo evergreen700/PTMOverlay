@@ -25,6 +25,9 @@ if "pathways" in config:
 #----------------PTM TYPES---------------
 PTM_TYPES=config["ptm_types"].keys()
 
+#----------------PTM DIRECTORY------------
+PTM_DIRS = config["ptm_dir_names"]
+
 #-----------DIR SETUP------------------
 PROTEOMES=config["proteome_dir"]
 PEPXML_DIR=config["pepXML_dir"]
@@ -53,6 +56,7 @@ org_table = pd.read_csv("index_umb_taxa_gca.tsv", sep="\t", index_col="Inde\
 x")
 strain_to_assembly = dict(zip(org_table["UMB"],org_table["Assembly"]))
 strain_to_species = dict(zip(org_table["UMB"],org_table["Taxa"]))
+assembly_to_species = dict(zip(org_table["Assembly"],org_table["Taxa"]))
 
 #----------HANDLING FOR "ALL" KO'S----------
 kofiles = glob.glob(os.path.join(PROTEOMES,"*.kegg.txt"))
@@ -93,12 +97,12 @@ for i in ORTHOLOGS:
   name = koInfo[2][12:]
   FULLNAMES[i] = name
   symbol = symbol.split(", ")[0].strip()
-  symbol = re.sub("\.","_",symbol)
-  name = re.sub("\[.*]","",name)
-  name = re.sub("\(.*\) ", "", name)
-  name = re.sub("[\(\),]","", name)
-  name = re.sub(" /.*$","", name).strip()
-  name = re.sub("[/ :]","_", name)
+  symbol = re.sub(r"\.","_",symbol)
+  name = re.sub(r"\[.*]","",name)
+  name = re.sub(r"\(.*\) ", "", name)
+  name = re.sub(r"[\(\),]","", name)
+  name = re.sub(r" /.*$","", name).strip()
+  name = re.sub(r"[/ :]","_", name)
   name = re.sub("->","-to-", name)
   name = re.sub("'","prime", name)
   SYMBOLS.append(symbol)
@@ -110,7 +114,10 @@ for i in ORTHOLOGS:
 wildcard_constraints:
   ko="K[0-9]+",
   ptm_type="[A-Za-z]+",
-  ptm_types="[A-Za-z_]+"
+  ptm_types="[A-Za-z_]+",
+  strain_name="UMB[0-9]+",
+  assembly=r"GC[AF]_[0-9]+\.[0-9]+",
+  ptm_dir_name="[A-Za-z0-9_]+"
 
 rule preAlignBenchmark:
   input:
@@ -142,8 +149,8 @@ rule filterCSV:
 
 rule makeBigCSV:
   input:
-    ptm=expand(PTM_DIR+'/{k}_{p}_aligned.json',k=ORTHOLOGS,p=PTM_TYPES),
-    faa=expand(RAW_ALIGNMENTS+'/{k}.faa',k=ORTHOLOGS)
+    ptm=expand(PTM_DIR+'/{k}_{p}.aligned.json',k=ORTHOLOGS,p=PTM_TYPES),
+    faa=expand(RAW_ALIGNMENTS+'/{k}.fasta',k=ORTHOLOGS)
   output:
     csv=FINAL_ALIGNMENTS+'/'+BATCH_PREFIX+'unfiltered_ptms.csv'
   params:
@@ -157,10 +164,10 @@ rule makeBigCSV:
 
 rule alignPTMs:
   input:
-    fasta=RAW_ALIGNMENTS+'/{ko}.faa',
-    ptms=PTM_DIR+'/{ko}_{ptm_type}.json'
+    fasta=RAW_ALIGNMENTS+'/{ko}.fasta',
+    ptms=PTM_DIR+'/{ko}_{ptm_type}.gathered.json'
   output:
-    ptms=PTM_DIR+'/{ko}_{ptm_type}_aligned.json'
+    ptms=PTM_DIR+'/{ko}_{ptm_type}.aligned.json'
   shell:
     '''
     {PYTHON} scripts/ptm_liftover.py {input.ptms} {input.fasta} {output.ptms}
@@ -168,8 +175,8 @@ rule alignPTMs:
 
 rule fastaAnnotate:
   input:
-    alignment=RAW_ALIGNMENTS+'/{ko}.faa',
-    ptms=expand(PTM_DIR+'/{{ko}}_{pt}_aligned.json', pt=lambda w: w.ptm_types.split("_"))
+    alignment=RAW_ALIGNMENTS+'/{ko}.fasta',
+    ptms=expand(PTM_DIR+'/{{ko}}_{pt}.aligned.json', pt=lambda w: w.ptm_types.split("_"))
   output:
     html=FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{symbol}__{name}.html'
   params:
@@ -181,9 +188,9 @@ rule fastaAnnotate:
 
 rule muscle:
   input:
-    fasta=PRE_ALIGN_FASTAS+'/{ko}.faa'
+    fasta=PRE_ALIGN_FASTAS+'/{ko}.fasta'
   output:
-    alignment=RAW_ALIGNMENTS+'/{ko}.faa'
+    alignment=RAW_ALIGNMENTS+'/{ko}.fasta'
   shell:
     '''
     {PYTHON} scripts/runMUSCLE.py {input.fasta} {output.alignment}
@@ -193,7 +200,7 @@ rule gather_ptms:
   input:
     ptm_jsons=expand(PTM_DIR+'/{strain_name}_{{ptm_type}}.json', strain_name=strain_to_assembly.keys())
   output:
-    ptm_json=PTM_DIR+'/{ko}_{ptm_type}.json'
+    ptm_json=PTM_DIR+'/{ko}_{ptm_type}.gathered.json'
   shell:
     '''
     {PYTHON} scripts/gather_ptm.py {input.ptm_jsons} {wildcards.ko} {output.ptm_json}
@@ -201,8 +208,8 @@ rule gather_ptms:
 
 rule split_ptms:
   input:
-    pepXML_dir=ancient(PEPXML_DIR+'/{ptm_type}/'),
-    fasta=ancient(expand(PROTEOMES+'/{proteome_name}.faa', proteome_name=lambda w: strain_to_assembly[w.strain_name])),
+    pepXML_dir=lambda w: ancient(PEPXML_DIR+'/'+config["ptm_dir_names"][w.ptm_type]+'/'),
+    fasta=ancient(expand(PROTEOMES+'/{proteome_name}.fasta', proteome_name=lambda w: strain_to_assembly[w.strain_name])),
     mass=ancient('scripts/ptm_mass.yaml')
   output:
     ptms=PTM_DIR+'/{strain_name}_{ptm_type}.json'
@@ -217,9 +224,9 @@ rule split_ptms:
 
 rule group_orthologs:
   input:
-    fastas=expand(PROTEOMES+"/{assembly}.faa", assembly=org_table["Assembly"])
+    fastas=expand(PROTEOMES+"/{assembly}.fasta", assembly=org_table["Assembly"])
   output:
-    fastas=PRE_ALIGN_FASTAS+'/{ko}.faa'
+    fastas=PRE_ALIGN_FASTAS+'/{ko}.fasta'
   shell:
     '''
     {PYTHON} scripts/group_orthologs.py {PROTEOMES} {wildcards.ko} {SPECIES_INFO} {PRE_ALIGN_FASTAS}
@@ -229,7 +236,7 @@ rule generate_tree_fasta:
   input:
     html = expand(FINAL_ALIGNMENTS+'/{{ptm_types}}/{{ko}}__{symbol}__{name}.html', symbol=lambda w: SN_MATCHUPS[w.ko][0], name=lambda w: SN_MATCHUPS[w.ko][1])
   output:
-    fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
+    fasta=TREE_DIR+'/{ko}__{ptm_types}.fasta',
     json=TREE_DIR+'/{ko}__{ptm_types}.json'
   params:
     name=lambda w: SN_MATCHUPS[w.ko][1],
@@ -241,7 +248,7 @@ rule generate_tree_fasta:
 
 rule generate_tree_file:
   input:
-    fasta=TREE_DIR+'/{ko}__{ptm_types}.faa'
+    fasta=TREE_DIR+'/{ko}__{ptm_types}.fasta'
   output:
     nh=TREE_DIR+'/{ko}__{ptm_types}.nh'
   shell:
@@ -252,7 +259,7 @@ rule generate_tree_file:
 rule generate_tree:
   input:
     html = FINAL_ALIGNMENTS+'/{ptm_types}/{ko}__{symbol}__{name}.html',
-    fasta=TREE_DIR+'/{ko}__{ptm_types}.faa',
+    fasta=TREE_DIR+'/{ko}__{ptm_types}.fasta',
     nh=TREE_DIR+'/{ko}__{ptm_types}.nh',
     json=TREE_DIR+'/{ko}__{ptm_types}.json',
     tsv= SPECIES_INFO
@@ -269,12 +276,14 @@ rule download_sequence_ftp:
   input:
     cred=ancient("ftp_credentials.yaml")
   output:
-    proteome=PROTEOMES+"/{proteome}"
+    proteome=PROTEOMES+"/{assembly}.fasta"
   params:
-    path="outgoing/PTM_tool_Youngki/Sequences/{proteome}.fa*"
+    # matched by assembly only, so the species name and the dataset date in the
+    # remote filename don't have to be reproduced here
+    path="sequence/FASTA_File/*_{assembly}_*.fasta"
   shell:
     '''
-    {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {PROTEOMES}
+    {PYTHON} scripts/download_ftp.py {input.cred} '{params.path}' {output.proteome}
     '''
 
 rule download_mass_spec_ftp:
@@ -283,12 +292,12 @@ rule download_mass_spec_ftp:
   input:
     cred=ancient("ftp_credentials.yaml")
   output:
-    proteome=directory(PEPXML_DIR+"/{ptm_type}")
+    pepXML_dir=directory(PEPXML_DIR+"/{ptm_dir_name}")
   params:
-    path="outgoing/PTM_tool_Youngki/MSdata/*{ptm_type}*"
+    path="search/Search_Engine_Files/{ptm_dir_name}"
   shell:
     '''
-    {PYTHON} scripts/download_ftp.py {input.cred} {params.path} {output.proteome}
+    {PYTHON} scripts/download_ftp.py --unzip '*.pepXML' {input.cred} {params.path} {output.pepXML_dir}
     '''
 
 

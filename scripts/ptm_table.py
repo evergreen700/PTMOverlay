@@ -14,7 +14,7 @@ namesDict = dict(zip(kids,names))
 
 kidFrames = dict()
 for k in kids:
-    inSeqFile = inSeqDir+"/"+k+".faa"
+    inSeqFile = inSeqDir+"/"+k+".fasta"
     inSeq = dict()
     with open(inSeqFile, "r") as inFile:
         line = inFile.readline().strip()
@@ -29,7 +29,7 @@ for k in kids:
     conSeq = "".join(pd.DataFrame(inSeq).T.mode().iloc[0])
     ptm_mask_list = []
     for p in ptms:
-        inPTMFile = inPTMDir+"/"+k+"_"+p+"_aligned.json"
+        inPTMFile = inPTMDir+"/"+k+"_"+p+".aligned.json"
         with open(inPTMFile,"r") as inFile:
             ptm_sites = json.load(inFile)
 
