@@ -2,8 +2,7 @@
 Capstone PTM alignment
 This pipeline has been successfully tested on Linux, Windows and some Mac systems. It is known to have issues on ARM-based M4 systems.
 
-## Installation
-### UV Environment (Recommended)
+## UV Environment (Recommended)
 To set up the workflow, first clone the git repository:
 ```
 git clone https://github.com/evergreen700/PTMOverlay
@@ -23,7 +22,7 @@ uv run snakemake --cores all
 ```
 The final output files will be in the folder `align_reports`
 
-### Native
+## Native
 
 There are extensive packages to install, so a conda environment is recommended. Instructions for creating a new conda environment can be found here: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 
@@ -61,7 +60,7 @@ If on Linux:
 If on Mac: 
 - Edit line 23 or 25 depending on your machine
 
-## Execution
+### Execution
 To run the workflow, place proteomes and kegg annotation files in the folder designated as `proteome_dir` in the config file. Place .pepXML files in folders sorted by ptm type within the folder designated as `pepXML_dir` in the config file. Below is an example of the file structure:
 ```
 PTMOverlay
@@ -88,7 +87,7 @@ cd PTMOverlay
 snakemake --cores all
 ```
 
-### Example run
+## Example run
 The kegg annotation files are included as an example. The proteomes and the mass spec search results
 are downloaded automatically from the MassIVE ftp server (see `ftp_credentials.yaml`) when running
 snakemake: `download_sequence_ftp` fetches one `.fasta` per assembly into `proteome/`, and
