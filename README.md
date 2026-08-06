@@ -21,7 +21,7 @@ Run the workflow:
 ```
 uv run snakemake --cores all
 ```
-
+The final output files will be in the folder `align_reports`
 
 ### Native
 
