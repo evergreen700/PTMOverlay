@@ -51,7 +51,7 @@ ends = dict()
 
 #read in PTM files
 for f in inPTM:
-    mod = os.path.basename(f).split("_")[1]
+    mod = os.path.basename(f).split("_")[1].split(".")[0]
     ptm_types.append(mod)
     with open(f,"r") as readIn:
 
