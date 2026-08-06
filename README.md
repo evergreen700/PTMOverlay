@@ -3,25 +3,29 @@ Capstone PTM alignment
 This pipeline has been successfully tested on Linux, Windows and some Mac systems. It is known to have issues on ARM-based M4 systems.
 
 ## Installation
-### Docker (Recommended)
-This workflow can be run from docker. Docker can be installed from https://docs.docker.com. To set up the workflow, first clone the git repository:
+### UV Environment (Recommended)
+To set up the workflow, first clone the git repository:
 ```
 git clone https://github.com/evergreen700/PTMOverlay
 cd PTMOverlay
 ```
-If you are running the docker container on a Windows machine, git will automatically change a script in a way that doesn't work with the docker image. Fix it with this:
+If UV is not installed:
 ```
-git config core.autocrlf false
-git checkout .\scripts\*
+pip install uv
 ```
-Then, build the docker image:
+Create the UV environment:
 ```
-docker build -t ptm-overlay .
+uv sync
 ```
+Run the workflow:
+```
+uv run snakemake --cores all
+```
+
 
 ### Native
 
-Create a conda environment. All code should be run inside the environment you create. Instructions for creating a new conda environment can be found here: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+There are extensive packages to install, so a conda environment is recommended. Instructions for creating a new conda environment can be found here: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 
 Install dependencies using pip:
 ```
@@ -78,34 +82,16 @@ PTMOverlay
 
 `index_umb_taxa_gca.tsv` is a tab-separated file that is used to match between mass spec strain IDs (UMB####), species name, and proteome assembly (GCA). If you are using your own mass spec and proteome files, make sure that the names are in this tsv.
 
-### Docker Execution
-To run the workflow from the docker image on Windows, run
-```
-docker run -v .\:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all"
-```
-
-To run the workflow from the docker image on MacOS or Linux, run
-```
-docker run -v ./:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all"
-```
-
-The ftp server rate-limits new connections, so concurrent downloads are capped at 2 by default
-(`profiles/default/config.yaml`, applied automatically). To raise or lower the cap:
-```
-docker run -v .\:/PTMOverlay ptm-overlay /bin/bash -c "cd /PTMOverlay && snakemake --cores all --resources='downloads=4'"
-```
-
-### Native Execution
 To run the workflow on your operating system:
 ```
 cd PTMOverlay
-snakemake
+snakemake --cores all
 ```
 
-## Example run
+### Example run
 The kegg annotation files are included as an example. The proteomes and the mass spec search results
 are downloaded automatically from the MassIVE ftp server (see `ftp_credentials.yaml`) when running
 snakemake: `download_sequence_ftp` fetches one `.fasta` per assembly into `proteome/`, and
 `download_mass_spec_ftp` fetches one directory per search into `mass_spec/`, unpacking the `.pepXML`
-files out of the downloaded zip archives. Budget ~10 GB of free disk for the unpacked mass spec data.
+files out of the downloaded zip archives. Until the data is public, edit the `ftp_credentials.yaml` file with your username and password to access the data before running the workflow. Budget ~10 GB of free disk for the unpacked mass spec data.
 We recommend keeping the config file the way it is for the first run. If there are other orthologs or pathways you want to look at on the 31 species, rerunning with modified parameters will run faster if intermediates are already generated.
