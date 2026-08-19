@@ -72,21 +72,47 @@ empty_seq = np.array([" "] * len(alignment[0].seq))
 seq_matrix = np.vstack([empty_seq, seq_matrix, empty_seq])
 leaf_order = [" "] + leaf_order + [" "]
 
+spacing = 1.2
+
 for i, (species, seq) in enumerate(zip(leaf_order, seq_matrix)):
     if species not in ordered_modifications:
         continue
+
     for j, letter in enumerate(seq):
         if letter == ".":
-            letter = " … "
+            letter = "|"
+
         mod_type = ordered_modifications[species].get(str(j), None)
+
+        x = j * spacing
+
         if mod_type:
             color = mod_colors[mod_type]
-            axes[1].add_patch(plt.Rectangle((j - 0.4, i - 0.3), 0.8, 0.8, color=color, alpha=1.0))
-            text_color = "white" if color in mod_colors.values() else "black"
+
+            axes[1].add_patch(
+                plt.Rectangle(
+                    (x - 0.4, i - 0.3),
+                    0.8,
+                    0.8,
+                    color=color,
+                    alpha=1.0
+                )
+            )
+
+            text_color = "white"
         else:
             text_color = "black"
 
-        axes[1].text(j, i, letter, ha="center", va="center", color=text_color, fontsize=8, fontweight="bold")
+        axes[1].text(
+            x,
+            i,
+            letter,
+            ha="center",
+            va="center",
+            color=text_color,
+            fontsize=8,
+            fontweight="bold"
+        )
 
 # Label axes to match tree order
 axes[1].set_yticks(range(len(leaf_order)))
@@ -100,9 +126,10 @@ axes[1].tick_params(axis="x", which="both", bottom=False, top=False)
 axes[1].tick_params(axis="y", which="both", left=False, right=False)
 
 axes[1].set_xlim(-1, max(map(len, seq_matrix)))
+axes[1].set_xticks([])
 
 legend_patches = [mpatches.Patch(color=color, label=mod) for mod, color in mod_colors.items()]
-axes[1].legend(handles=legend_patches, title="Modifications", loc="upper left", bbox_to_anchor=(1.05, 1), fontsize=10)
+axes[1].legend(handles=legend_patches, title="Modifications", loc="upper left", bbox_to_anchor=(1.2, 1), fontsize=10)
 
 plt.tight_layout()
 plt.savefig(outfile, bbox_inches="tight")
