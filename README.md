@@ -28,7 +28,7 @@ There are extensive packages to install, so a conda environment is recommended. 
 
 Install dependencies using pip:
 ```
-pip install matplotlib pandas pyteomics biopython lxml snakemake ncbi-taxonomist svgutils six
+pip install matplotlib pandas pyteomics biopython lxml snakemake ncbi-taxonomist svgutils six openpyxl
 brew install pdf2svg (Mac)
 sudo apt-get install pdf2svg (Linux)
 ```
@@ -74,12 +74,14 @@ PTMOverlay
 | | + ... (other phospho pepXMLs)
 | + ... (other PTM types)
 + index_umb_taxa_gca.tsv
++ PTM_BestLocalization_AllStrains_20260828.xlsx
 + README.md
 + snakefile
 + ...
 ```
 
 `index_umb_taxa_gca.tsv` is a tab-separated file that is used to match between mass spec strain IDs (UMB####), species name, and proteome assembly (GCA). If you are using your own mass spec and proteome files, make sure that the names are in this tsv.
+`PTM_BestLocalization_AllStrains_20260828.xlsx` is an Excel spreadsheet with the localization scores and information for each PTM location. The code assumes that the spreadsheet has 3 tabs labeled: Acetyl_Carbamyl, Methylation, and Phosphorylation. The columns that are needed for the workflow are `Strain`, `PTM`, `Site_Probabilities`, and `Protein`. If you are using your own localization scores from the mass spectrometry data, you can change the `localization_info` file path in the `config.yaml` file to your local file.
 
 To run the workflow on your operating system:
 ```
