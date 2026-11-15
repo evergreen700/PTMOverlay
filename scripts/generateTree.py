@@ -71,24 +71,18 @@ seq_matrix = np.array([list(rec.seq) for rec in ordered_alignment])
 empty_seq = np.array([" "] * len(alignment[0].seq))
 seq_matrix = np.vstack([empty_seq, seq_matrix, empty_seq])
 leaf_order = [" "] + leaf_order + [" "]
-
-spacing = 1.2
+spacing = 1.0
 
 for i, (species, seq) in enumerate(zip(leaf_order, seq_matrix)):
     if species not in ordered_modifications:
         continue
-
     for j, letter in enumerate(seq):
         if letter == ".":
             letter = "|"
-
         mod_type = ordered_modifications[species].get(str(j), None)
-
         x = j * spacing
-
         if mod_type:
             color = mod_colors[mod_type]
-
             axes[1].add_patch(
                 plt.Rectangle(
                     (x - 0.4, i - 0.3),
@@ -98,11 +92,9 @@ for i, (species, seq) in enumerate(zip(leaf_order, seq_matrix)):
                     alpha=1.0
                 )
             )
-
             text_color = "white"
         else:
             text_color = "black"
-
         axes[1].text(
             x,
             i,
@@ -125,11 +117,12 @@ axes[1].set_yticklabels(leaf_order, fontsize=10, fontstyle='italic')
 axes[1].tick_params(axis="x", which="both", bottom=False, top=False)
 axes[1].tick_params(axis="y", which="both", left=False, right=False)
 
-axes[1].set_xlim(-1, max(map(len, seq_matrix)))
+max_length = seq_matrix.shape[1]
+axes[1].set_xlim(-1,(max_length - 1) * spacing + 1)
 axes[1].set_xticks([])
 
 legend_patches = [mpatches.Patch(color=color, label=mod) for mod, color in mod_colors.items()]
-axes[1].legend(handles=legend_patches, title="Modifications", loc="upper left", bbox_to_anchor=(1.2, 1), fontsize=10)
+axes[1].legend(handles=legend_patches, title="Modifications", loc="upper left", bbox_to_anchor=(1.02, 1), fontsize=10)
 
 plt.tight_layout()
 plt.savefig(outfile, bbox_inches="tight")
