@@ -7,6 +7,7 @@ python: python3
 proteome_dir: proteome #this directory must exist and contain proteomes (.faa) and kegg annotations (.kegg.txt) for each organism
 pepXML_dir: mass_spec #this directory must exist and have one subdirectory (with matching name) for each ptm type. Each subdirectory must have one .pepXML mass spec file for each organism
 species_info: index_umb_taxa_gca.tsv #this must exist
+localization_info: "PTM_BestLocalization_AllStrains_20260828.xlsx"
 
 ### PTM types ###
 
@@ -31,26 +32,29 @@ ptm_dir_names:
 
 batch_name: Glycolysis
 
-orthologs_to_align: #list of kegg ID's (eg, K01689) or "all"
-  - K01647
-  - K27802
-  - K00031
-  - K00164
-  - K01902
-  - K00239
-  - K01676
-  - K00116
+# orthologs_to_align: #list of kegg ID's (eg, K01689) or "all"
+#   - K01647
+#   - K27802
+#   - K00031
+#   - K00164
+#   - K01902
+#   - K00239
+#   - K01676
+#   - K00116
+#   - K01689
 
-# pathways: #alternative to a list of orthologs
-#   - ko00010
+pathways: #alternative to a list of orthologs
+  - ko00010
 
 ortholog_sequence_cutoff: 2 #15 #how many sequences/species that are required to perform alignment. Lowest allowed value is 2
 min_ptms_freq: .5 #min ptms for a cite to be in the filtered csv output. Will default to ortholog_sequence_cutoff.
+localization_threshold: 0.75 #the minimum probability for a ptm to be considered localized. Default is 0.75
 
 row_length: 100 #the length of each row in the final ortholog reports
-select_intervals: #specifc intervals to include in final ortholog reports, inclusive. Default is to include everything
-  - [0,60]
-  - [200,225]
+# select_intervals: #specifc intervals to include in final ortholog reports, inclusive. Default is to include everything
+#   - [0,40]
+#   - [176,200]
+#   - [401,449]
 
 ### output directory ###
 
