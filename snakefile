@@ -11,6 +11,7 @@ import re
 #---------------CONFIG--------------------
 configfile: "config.yaml"
 PYTHON = config["python"]
+LOCALIZATION_THRESHOLD = config["localization_threshold"]
 
 #-----------ORTHOLOGS/PATHWAYS------------
 if "orthologs_to_align" in config:
@@ -32,6 +33,7 @@ PTM_DIRS = config["ptm_dir_names"]
 PROTEOMES=config["proteome_dir"]
 PEPXML_DIR=config["pepXML_dir"]
 SPECIES_INFO=config["species_info"]
+LOCALIZATION_INFO=config["localization_info"]
 
 #----------ORGANISM TABLE---------------
 org_table = pd.read_csv("index_umb_taxa_gca.tsv", sep="\t", index_col="Inde\
@@ -162,10 +164,21 @@ rule makeBigCSV:
     {PYTHON} scripts/ptm_table.py {RAW_ALIGNMENTS} {PTM_DIR} '{params.ptm}' '{params.ko}' '{params.kn}' {output.csv}
     '''
 
+rule localizePTMs:
+  input:
+    fasta=PROTEOMES,
+    ptms=PTM_DIR+'/{ko}_{ptm_type}.gathered.json'
+  output:
+    ptms=PTM_DIR+'/{ko}_{ptm_type}.gathered.localized.json'
+  shell:
+    '''
+    {PYTHON} scripts/ptm_localization.py {LOCALIZATION_INFO} {input.fasta} {LOCALIZATION_THRESHOLD} {input.ptms} {output.ptms} {FINAL_ALIGNMENTS}
+    '''
+
 rule alignPTMs:
   input:
     fasta=RAW_ALIGNMENTS+'/{ko}.fasta',
-    ptms=PTM_DIR+'/{ko}_{ptm_type}.gathered.json'
+    ptms=PTM_DIR+'/{ko}_{ptm_type}.gathered.localized.json'
   output:
     ptms=PTM_DIR+'/{ko}_{ptm_type}.aligned.json'
   shell:
@@ -390,4 +403,3 @@ rule figures:
     {PYTHON} scripts/scale_svg.py {params.tree_svg} {params.scaled_tree}
     {PYTHON} scripts/combine_taxon_pathway.py {params.scaled_tree} {output.svg} {output.combined}
     '''
-
